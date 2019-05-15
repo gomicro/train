@@ -41,6 +41,7 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 	count := len(repos)
 	name := repos[0].GetName()
 	owner := repos[0].GetOwner().GetLogin()
+	appendStr := fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
 	bar := uiprogress.AddBar(count).
 		AppendCompleted().
@@ -49,13 +50,14 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 			return fmt.Sprintf("Processing (%d/%d)", b.Current(), count)
 		}).
 		AppendFunc(func(b *uiprogress.Bar) string {
-			return fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
+			return appendStr
 		})
 
 	urls := []string{}
 	for _, repo := range repos {
 		name = repo.GetName()
 		owner = repo.GetOwner().GetLogin()
+		appendStr = fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
 		url, err := repositories.Process(clientCtx, client, repo)
 		if err != nil {
@@ -71,6 +73,8 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 		urls = append(urls, url)
 		bar.Incr()
 	}
+
+	appendStr = ""
 
 	uiprogress.Stop()
 
