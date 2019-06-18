@@ -120,18 +120,25 @@ var changeMapping = map[string]string{
 	"added":  "added",
 	"adding": "added",
 
-	"changed":  "changed",
-	"changing": "changed",
+	"altering":  "changed",
+	"changed":   "changed",
+	"changing":  "changed",
+	"replaced":  "changed",
+	"replacing": "changed",
 
 	"deprecated":  "deprecated",
 	"deprecating": "deprecated",
 
-	"removed":  "removed",
-	"removing": "removed",
+	"detached":  "removed",
+	"detaching": "removed",
+	"removed":   "removed",
+	"removing":  "removed",
 
-	"fixed":    "fixed",
-	"fixing":   "fixed",
-	"updating": "fixed",
+	"fixed":     "fixed",
+	"fixing":    "fixed",
+	"updating":  "fixed",
+	"resolved":  "fixed",
+	"resolving": "fixed",
 
 	"security": "security",
 	"securing": "security",
