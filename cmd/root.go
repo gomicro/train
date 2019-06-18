@@ -45,12 +45,18 @@ func init() {
 		},
 	}
 
+	token := os.Getenv("TRAIN_GHTOKEN")
+
+	if token == "" {
+		printf("warning: TRAIN_GHTOKEN missing")
+	}
+
 	clientCtx = context.Background()
 	clientCtx = context.WithValue(clientCtx, oauth2.HTTPClient, httpClient)
 
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{
-			AccessToken: "745e9adeba6831f11a327a3402eb2640ae1ae0b5",
+			AccessToken: token,
 		},
 	)
 
