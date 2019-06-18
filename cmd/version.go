@@ -9,6 +9,8 @@ func init() {
 }
 
 var (
+	// Version is the current version of train, made available for use through
+	// out the application.
 	Version = "0.0.1"
 )
 

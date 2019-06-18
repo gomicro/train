@@ -3,13 +3,14 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/go-github/github"
 )
 
 // Process takes a github client, context for the client, and a repo to process.
 // It returns the resulting pull request URL or an error if any are encountered.
-func Process(ctx context.Context, client *github.Client, repo *github.Repository) (string, error) {
+func Process(ctx context.Context, client *github.Client, repo *github.Repository, prBodyTemplate string) (string, error) {
 	name := repo.GetName()
 	owner := repo.GetOwner().GetLogin()
 	head := repo.GetDefaultBranch()
@@ -34,26 +35,39 @@ func Process(ctx context.Context, client *github.Client, repo *github.Repository
 		pr := prs[0]
 
 		pr.Title = github.String("Release")
-		pr.Body = github.String("Release created with `train`")
+
+		changes, _ := changeLog(ctx, client, owner, name, base, head)
+		body := ""
+
+		for c, logs := range changes {
+			for _, l := range logs {
+				body = body + fmt.Sprintf("* `%v` %v\n", strings.ToTitle(c), l)
+			}
+		}
+
+		body = body + prBodyTemplate
+		pr.Body = github.String(body)
 
 		pr, _, _ = client.PullRequests.Edit(ctx, owner, name, pr.GetNumber(), pr)
 		return pr.GetHTMLURL(), nil
 	}
 
-	comp, _, err := client.Repositories.CompareCommits(ctx, owner, name, base, head)
-	if err != nil {
-		return "", fmt.Errorf("compare commits: %v", err.Error())
+	changes, _ := changeLog(ctx, client, owner, name, base, head)
+	body := ""
+
+	for c, logs := range changes {
+		for _, l := range logs {
+			body = body + fmt.Sprintf("* `%v` %v\n", strings.ToTitle(c), l)
+		}
 	}
 
-	if len(comp.Commits) == 0 {
-		return "", fmt.Errorf("no commits")
-	}
+	body = body + prBodyTemplate
 
 	newPR := &github.NewPullRequest{
 		Title:               github.String("Release"),
 		Head:                &head,
 		Base:                &base,
-		Body:                github.String("Release created with `train`"),
+		Body:                github.String(body),
 		MaintainerCanModify: github.Bool(true),
 	}
 
@@ -63,4 +77,36 @@ func Process(ctx context.Context, client *github.Client, repo *github.Repository
 	}
 
 	return pr.GetHTMLURL(), nil
+}
+
+func changeLog(ctx context.Context, client *github.Client, owner, name, base, head string) (map[string][]string, error) {
+	changes := map[string][]string{
+		"added":      []string{},
+		"changed":    []string{},
+		"deprecated": []string{},
+		"removed":    []string{},
+		"fixed":      []string{},
+		"security":   []string{},
+	}
+
+	comp, _, err := client.Repositories.CompareCommits(ctx, owner, name, base, head)
+	if err != nil {
+		return nil, fmt.Errorf("compare commits: %v", err.Error())
+	}
+
+	if len(comp.Commits) == 0 {
+		return nil, fmt.Errorf("no commits")
+	}
+
+	for _, commit := range comp.Commits {
+		c := strings.Split(strings.ToLower(*commit.Commit.Message), "\n")[0]
+
+		for change := range changes {
+			if strings.Contains(c, change) {
+				changes[change] = append(changes[change], strings.TrimPrefix(*commit.Commit.Message, change))
+			}
+		}
+	}
+
+	return changes, nil
 }
