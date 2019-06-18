@@ -37,19 +37,8 @@ func Process(ctx context.Context, client *github.Client, repo *github.Repository
 		pr.Title = github.String("Release")
 
 		changes, _ := changeLog(ctx, client, owner, name, base, head)
-		body := ""
+		body := prBody(prBodyTemplate, changes)
 
-		for c, logs := range changes {
-			for _, l := range logs {
-				body = body + fmt.Sprintf("* `%v` %v\n", strings.ToTitle(c), l)
-			}
-		}
-
-		if body == "" {
-			body = "no change log detected\n"
-		}
-
-		body = body + prBodyTemplate
 		pr.Body = github.String(body)
 
 		pr, _, _ = client.PullRequests.Edit(ctx, owner, name, pr.GetNumber(), pr)
@@ -61,19 +50,7 @@ func Process(ctx context.Context, client *github.Client, repo *github.Repository
 		return "", err
 	}
 
-	body := ""
-
-	for c, logs := range changes {
-		for _, l := range logs {
-			body = body + fmt.Sprintf("* `%v` %v\n", strings.ToTitle(c), l)
-		}
-	}
-
-	if body == "" {
-		body = "no change log detected\n"
-	}
-
-	body = body + prBodyTemplate
+	body := prBody(prBodyTemplate, changes)
 
 	newPR := &github.NewPullRequest{
 		Title:               github.String("Release"),
@@ -113,12 +90,49 @@ func changeLog(ctx context.Context, client *github.Client, owner, name, base, he
 	for _, commit := range comp.Commits {
 		c := strings.Split(strings.ToLower(*commit.Commit.Message), "\n")[0]
 
-		for change := range changes {
-			if strings.Contains(c, change) {
-				changes[change] = append(changes[change], strings.TrimPrefix(*commit.Commit.Message, change))
+		for synonim, label := range changeMapping {
+			if strings.Contains(c, synonim) {
+				changes[label] = append(changes[label], strings.TrimPrefix(*commit.Commit.Message, synonim))
 			}
 		}
 	}
 
 	return changes, nil
+}
+
+func prBody(prBodyTemplate string, changes map[string][]string) string {
+	body := ""
+
+	for c, logs := range changes {
+		for _, l := range logs {
+			body = body + fmt.Sprintf("* `%v` %v\n", strings.ToTitle(c), l)
+		}
+	}
+
+	if body == "" {
+		body = "no change log detecte &mdash; try favoring words like `added`, `changed`, or `removed`\n"
+	}
+
+	return body + prBodyTemplate
+}
+
+var changeMapping = map[string]string{
+	"added":  "added",
+	"adding": "added",
+
+	"changed":  "changed",
+	"changing": "changed",
+
+	"deprecated":  "deprecated",
+	"deprecating": "deprecated",
+
+	"removed":  "removed",
+	"removing": "removed",
+
+	"fixed":    "fixed",
+	"fixing":   "fixed",
+	"updating": "fixed",
+
+	"security": "security",
+	"securing": "security",
 }
