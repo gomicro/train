@@ -45,6 +45,10 @@ func Process(ctx context.Context, client *github.Client, repo *github.Repository
 			}
 		}
 
+		if body == "" {
+			body = "no change log detected\n"
+		}
+
 		body = body + prBodyTemplate
 		pr.Body = github.String(body)
 
@@ -52,13 +56,21 @@ func Process(ctx context.Context, client *github.Client, repo *github.Repository
 		return pr.GetHTMLURL(), nil
 	}
 
-	changes, _ := changeLog(ctx, client, owner, name, base, head)
+	changes, err := changeLog(ctx, client, owner, name, base, head)
+	if err != nil {
+		return "", err
+	}
+
 	body := ""
 
 	for c, logs := range changes {
 		for _, l := range logs {
 			body = body + fmt.Sprintf("* `%v` %v\n", strings.ToTitle(c), l)
 		}
+	}
+
+	if body == "" {
+		body = "no change log detected\n"
 	}
 
 	body = body + prBodyTemplate
