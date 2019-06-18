@@ -103,9 +103,9 @@ func changeLog(ctx context.Context, client *github.Client, owner, name, base, he
 func prBody(prBodyTemplate string, changes map[string][]string) string {
 	body := ""
 
-	for c, logs := range changes {
-		for _, l := range logs {
-			body = body + fmt.Sprintf("* `%v` %v\n", strings.ToTitle(c), l)
+	for _, label := range changeOrder {
+		for _, log := range changes[label] {
+			body = body + fmt.Sprintf("* `%v` %v\n", strings.ToTitle(label), log)
 		}
 	}
 
@@ -114,6 +114,15 @@ func prBody(prBodyTemplate string, changes map[string][]string) string {
 	}
 
 	return body + prBodyTemplate
+}
+
+var changeOrder = []string{
+	"added",
+	"changed",
+	"deprecated",
+	"removed",
+	"fixed",
+	"security",
 }
 
 var changeMapping = map[string]string{
