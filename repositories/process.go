@@ -116,7 +116,7 @@ func prBody(prBodyTemplate string, changes map[string][]string) string {
 	}
 
 	if body == "" {
-		body = "no change log detecte &mdash; try favoring words like `added`, `changed`, or `removed`\n"
+		body = "no change log detected &mdash; try favoring words like `added`, `changed`, or `removed`\n"
 	}
 
 	return body + prBodyTemplate
