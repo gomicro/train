@@ -91,6 +91,11 @@ func changeLog(ctx context.Context, client *github.Client, owner, name, base, he
 		c := strings.Split(strings.ToLower(*commit.Commit.Message), "\n")[0]
 
 		for synonim, label := range changeMapping {
+			if strings.HasPrefix(c, synonim) {
+				changes[label] = append(changes[label], strings.TrimPrefix(*commit.Commit.Message, synonim))
+				break
+			}
+
 			if strings.Contains(c, synonim) {
 				changes[label] = append(changes[label], strings.TrimPrefix(*commit.Commit.Message, synonim))
 				break
