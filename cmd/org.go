@@ -6,7 +6,6 @@ import (
 
 func init() {
 	rootCmd.AddCommand(orgCmd)
-	orgCmd.AddCommand(orgCreateCmd)
 }
 
 var orgCmd = &cobra.Command{
