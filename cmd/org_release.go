@@ -12,8 +12,9 @@ func init() {
 }
 
 var orgReleaseCmd = &cobra.Command{
-	Use: "release [org_name]",
-	Run: orgReleaseFunc,
+	Use:   "release [org_name]",
+	Short: "Release PRs for an org's repos that can be merged",
+	Run:   orgReleaseFunc,
 }
 
 func orgReleaseFunc(cmd *cobra.Command, args []string) {

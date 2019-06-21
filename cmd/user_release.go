@@ -15,8 +15,9 @@ func init() {
 }
 
 var userReleaseCmd = &cobra.Command{
-	Use: "release [username]",
-	Run: userReleaseFunc,
+	Use:   "release [username]",
+	Short: "Release PRs for a user's repos that can be merged",
+	Run:   userReleaseFunc,
 }
 
 func userReleaseFunc(cmd *cobra.Command, args []string) {

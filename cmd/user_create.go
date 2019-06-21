@@ -19,7 +19,6 @@ func init() {
 var userCreateCmd = &cobra.Command{
 	Use:   "create [username]",
 	Short: "Create release PRs for a user's repos",
-	Long:  `Create release PRs for a user's repos`,
 	Args:  cobra.ExactArgs(1),
 	Run:   userCreateFunc,
 }
