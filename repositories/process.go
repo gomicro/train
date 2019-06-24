@@ -132,13 +132,16 @@ var changeOrder = []string{
 }
 
 var changeMapping = map[string]string{
+	"add":      "added",
 	"added":    "added",
 	"adding":   "added",
+	"adds":     "added",
 	"created":  "added",
 	"creating": "added",
 
 	"altering":  "changed",
 	"changed":   "changed",
+	"changes":   "changed",
 	"changing":  "changed",
 	"replace":   "changed",
 	"replaced":  "changed",
@@ -151,7 +154,9 @@ var changeMapping = map[string]string{
 
 	"detached":  "removed",
 	"detaching": "removed",
+	"remove":    "removed",
 	"removed":   "removed",
+	"removes":   "removed",
 	"removing":  "removed",
 
 	"corrected":  "fixed",
