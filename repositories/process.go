@@ -116,7 +116,7 @@ func prBody(prBodyTemplate string, changes map[string][]string) string {
 	}
 
 	if body == "" {
-		body = "no change log detecte &mdash; try favoring words like `added`, `changed`, or `removed`\n"
+		body = "no change log detected &mdash; try favoring words like `added`, `changed`, or `removed`\n"
 	}
 
 	return body + prBodyTemplate
@@ -132,28 +132,39 @@ var changeOrder = []string{
 }
 
 var changeMapping = map[string]string{
-	"added":  "added",
-	"adding": "added",
+	"add":      "added",
+	"added":    "added",
+	"adding":   "added",
+	"adds":     "added",
+	"created":  "added",
+	"creating": "added",
 
 	"altering":  "changed",
 	"changed":   "changed",
+	"changes":   "changed",
 	"changing":  "changed",
+	"replace":   "changed",
 	"replaced":  "changed",
 	"replacing": "changed",
+	"update":    "changed",
+	"updating":  "changed",
 
 	"deprecated":  "deprecated",
 	"deprecating": "deprecated",
 
 	"detached":  "removed",
 	"detaching": "removed",
+	"remove":    "removed",
 	"removed":   "removed",
+	"removes":   "removed",
 	"removing":  "removed",
 
-	"fixed":     "fixed",
-	"fixing":    "fixed",
-	"updating":  "fixed",
-	"resolved":  "fixed",
-	"resolving": "fixed",
+	"corrected":  "fixed",
+	"correcting": "fixed",
+	"fixed":      "fixed",
+	"fixing":     "fixed",
+	"resolved":   "fixed",
+	"resolving":  "fixed",
 
 	"security": "security",
 	"securing": "security",

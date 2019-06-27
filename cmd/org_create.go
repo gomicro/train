@@ -19,7 +19,6 @@ func init() {
 var orgCreateCmd = &cobra.Command{
 	Use:   "create [org_name]",
 	Short: "Create release PRs for an org's repos",
-	Long:  `Create release PRs for an org's repos`,
 	Args:  cobra.ExactArgs(1),
 	Run:   orgCreateFunc,
 }
