@@ -40,7 +40,7 @@ func userReleaseFunc(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	urls, err := release(releases)
+	urls, err := release(releases, dryRun)
 	if err != nil {
 		printf("releasing: %v", err.Error())
 		os.Exit(1)
@@ -50,7 +50,12 @@ func userReleaseFunc(cmd *cobra.Command, args []string) {
 
 	if len(urls) > 0 {
 		printf("")
-		printf("Repos Released:")
+		if dryRun {
+			printf("(Dryrun) Repos Released:")
+		} else {
+			printf("Repos Released:")
+		}
+
 		for _, url := range urls {
 			printf(url)
 		}
@@ -103,7 +108,7 @@ func getReleases(repos []*github.Repository) ([]*github.PullRequest, error) {
 	return releases, nil
 }
 
-func release(releases []*github.PullRequest) ([]string, error) {
+func release(releases []*github.PullRequest, dryRun bool) ([]string, error) {
 	var released []string
 
 	if len(releases) < 1 {
@@ -143,12 +148,16 @@ func release(releases []*github.PullRequest) ([]string, error) {
 			continue
 		}
 
-		res, _, err := client.PullRequests.Merge(clientCtx, owner, name, release.GetNumber(), "release automerged by train", nil)
-		if err != nil {
-			return nil, fmt.Errorf("merge: %v", err.Error())
-		}
+		if !dryRun {
+			res, _, err := client.PullRequests.Merge(clientCtx, owner, name, release.GetNumber(), "release automerged by train", nil)
+			if err != nil {
+				return nil, fmt.Errorf("merge: %v", err.Error())
+			}
 
-		if res.GetMerged() {
+			if res.GetMerged() {
+				released = append(released, release.GetHTMLURL())
+			}
+		} else {
 			released = append(released, release.GetHTMLURL())
 		}
 
