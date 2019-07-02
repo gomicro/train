@@ -20,6 +20,7 @@ const (
 
 var (
 	verbose   bool
+	dryRun    bool
 	client    *github.Client
 	clientCtx context.Context
 )
@@ -28,6 +29,7 @@ func init() {
 	cobra.OnInitialize(initEnvs)
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "show more verbose output")
+	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dryRun", "d", false, "attempt the specified command without actually making live changes")
 
 	pool, err := gocertifi.CACerts()
 	if err != nil {
