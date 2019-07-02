@@ -5,6 +5,8 @@
 [![License](https://img.shields.io/github/license/gomicro/train.svg)](https://github.com/gomicro/train/blob/master/LICENSE.md)
 [![Release](https://img.shields.io/github/release/gomicro/train.svg)](https://github.com/gomicro/train/releases/latest)
 
+Train is a command line tool for creating pull requests on a project that follows the [Gitlab Flow](https://docs.gitlab.com/ee/workflow/gitlab_flow.html) style of release management.
+
 # Requirements
 Golang version 1.12 or higher
 
@@ -12,6 +14,14 @@ Golang version 1.12 or higher
 
 ```
 go get github.com/gomicro/train
+```
+
+# Usage
+
+See the help text for descriptions of what is available
+
+```
+train -h
 ```
 
 # Versioning
