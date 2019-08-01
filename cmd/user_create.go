@@ -58,7 +58,7 @@ func userCreateFunc(cmd *cobra.Command, args []string) {
 		owner = repo.GetOwner().GetLogin()
 		appendStr = fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
-		url, err := repositories.Process(clientCtx, client, repo, prBodyTemplate)
+		url, err := repositories.Process(clientCtx, client, repo, prBodyTemplate, dryRun)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "get branch: ") || strings.HasPrefix(err.Error(), "no commits") {
 				bar.Incr()
@@ -79,7 +79,12 @@ func userCreateFunc(cmd *cobra.Command, args []string) {
 
 	if len(urls) > 0 {
 		printf("")
-		printf("Release PRs Created:")
+		if dryRun {
+			printf("(Dryrun) Release PRs Created:")
+		} else {
+			printf("Release PRs Created:")
+		}
+
 		for _, url := range urls {
 			printf(url)
 		}

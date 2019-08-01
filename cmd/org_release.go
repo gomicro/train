@@ -37,7 +37,7 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	urls, err := release(releases)
+	urls, err := release(releases, dryRun)
 	if err != nil {
 		printf("releasing: %v", err.Error())
 		os.Exit(1)
@@ -47,7 +47,12 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 
 	if len(urls) > 0 {
 		printf("")
-		printf("Repos Released:")
+		if dryRun {
+			printf("(Dryrun) Repos Released:")
+		} else {
+			printf("Repos Released:")
+		}
+
 		for _, url := range urls {
 			printf(url)
 		}

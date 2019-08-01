@@ -10,7 +10,7 @@ import (
 
 // Process takes a github client, context for the client, and a repo to process.
 // It returns the resulting pull request URL or an error if any are encountered.
-func Process(ctx context.Context, client *github.Client, repo *github.Repository, prBodyTemplate string) (string, error) {
+func Process(ctx context.Context, client *github.Client, repo *github.Repository, prBodyTemplate string, dryRun bool) (string, error) {
 	name := repo.GetName()
 	owner := repo.GetOwner().GetLogin()
 	head := repo.GetDefaultBranch()
@@ -41,7 +41,10 @@ func Process(ctx context.Context, client *github.Client, repo *github.Repository
 
 		pr.Body = github.String(body)
 
-		pr, _, _ = client.PullRequests.Edit(ctx, owner, name, pr.GetNumber(), pr)
+		if !dryRun {
+			pr, _, _ = client.PullRequests.Edit(ctx, owner, name, pr.GetNumber(), pr)
+		}
+
 		return pr.GetHTMLURL(), nil
 	}
 
@@ -60,12 +63,16 @@ func Process(ctx context.Context, client *github.Client, repo *github.Repository
 		MaintainerCanModify: github.Bool(true),
 	}
 
-	pr, _, err := client.PullRequests.Create(ctx, owner, name, newPR)
-	if err != nil {
-		return "", fmt.Errorf("create pr: %v", err.Error())
+	if !dryRun {
+		pr, _, err := client.PullRequests.Create(ctx, owner, name, newPR)
+		if err != nil {
+			return "", fmt.Errorf("create pr: %v", err.Error())
+		}
+
+		return pr.GetHTMLURL(), nil
 	}
 
-	return pr.GetHTMLURL(), nil
+	return fmt.Sprintf("dryrun://github.com/%v/%v", owner, name), nil
 }
 
 func changeLog(ctx context.Context, client *github.Client, owner, name, base, head string) (map[string][]string, error) {
@@ -89,6 +96,10 @@ func changeLog(ctx context.Context, client *github.Client, owner, name, base, he
 
 	for _, commit := range comp.Commits {
 		c := strings.Split(strings.ToLower(*commit.Commit.Message), "\n")[0]
+
+		if strings.Contains(c, "merge pull request") {
+			continue
+		}
 
 		for synonim, label := range changeMapping {
 			if strings.HasPrefix(c, synonim) {
@@ -140,6 +151,7 @@ var changeMapping = map[string]string{
 	"creating": "added",
 
 	"altering":  "changed",
+	"change":    "changed",
 	"changed":   "changed",
 	"changes":   "changed",
 	"changing":  "changed",
@@ -149,9 +161,11 @@ var changeMapping = map[string]string{
 	"update":    "changed",
 	"updating":  "changed",
 
+	"deprecate":   "deprecated",
 	"deprecated":  "deprecated",
 	"deprecating": "deprecated",
 
+	"detach":    "removed",
 	"detached":  "removed",
 	"detaching": "removed",
 	"remove":    "removed",
@@ -159,6 +173,7 @@ var changeMapping = map[string]string{
 	"removes":   "removed",
 	"removing":  "removed",
 
+	"correct":    "fixed",
 	"corrected":  "fixed",
 	"correcting": "fixed",
 	"fixed":      "fixed",
