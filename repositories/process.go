@@ -147,6 +147,7 @@ var changeMapping = map[string]string{
 	"creating": "added",
 
 	"altering":  "changed",
+	"change":    "changed",
 	"changed":   "changed",
 	"changes":   "changed",
 	"changing":  "changed",
@@ -156,9 +157,11 @@ var changeMapping = map[string]string{
 	"update":    "changed",
 	"updating":  "changed",
 
+	"deprecate":   "deprecated",
 	"deprecated":  "deprecated",
 	"deprecating": "deprecated",
 
+	"detach":    "removed",
 	"detached":  "removed",
 	"detaching": "removed",
 	"remove":    "removed",
@@ -166,6 +169,7 @@ var changeMapping = map[string]string{
 	"removes":   "removed",
 	"removing":  "removed",
 
+	"correct":    "fixed",
 	"corrected":  "fixed",
 	"correcting": "fixed",
 	"fixed":      "fixed",
