@@ -11,7 +11,7 @@ func init() {
 var (
 	// Version is the current version of train, made available for use through
 	// out the application.
-	Version = "0.0.4"
+	Version = "0.0.5"
 )
 
 var versionCmd = &cobra.Command{

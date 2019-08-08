@@ -103,12 +103,12 @@ func changeLog(ctx context.Context, client *github.Client, owner, name, base, he
 
 		for synonim, label := range changeMapping {
 			if strings.HasPrefix(c, synonim) {
-				changes[label] = append(changes[label], strings.TrimPrefix(*commit.Commit.Message, synonim))
+				changes[label] = append(changes[label], strings.TrimPrefix(c, synonim))
 				break
 			}
 
 			if strings.Contains(c, synonim) {
-				changes[label] = append(changes[label], strings.TrimPrefix(*commit.Commit.Message, synonim))
+				changes[label] = append(changes[label], strings.TrimPrefix(c, synonim))
 				break
 			}
 		}
@@ -150,16 +150,19 @@ var changeMapping = map[string]string{
 	"created":  "added",
 	"creating": "added",
 
-	"altering":  "changed",
-	"change":    "changed",
-	"changed":   "changed",
-	"changes":   "changed",
-	"changing":  "changed",
-	"replace":   "changed",
-	"replaced":  "changed",
-	"replacing": "changed",
-	"update":    "changed",
-	"updating":  "changed",
+	"altering":   "changed",
+	"change":     "changed",
+	"changed":    "changed",
+	"changes":    "changed",
+	"changing":   "changed",
+	"convert":    "changed",
+	"converted":  "changed",
+	"converting": "changed",
+	"replace":    "changed",
+	"replaced":   "changed",
+	"replacing":  "changed",
+	"update":     "changed",
+	"updating":   "changed",
 
 	"deprecate":   "deprecated",
 	"deprecated":  "deprecated",
