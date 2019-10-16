@@ -103,12 +103,12 @@ func changeLog(ctx context.Context, client *github.Client, owner, name, base, he
 
 		for synonim, label := range changeMapping {
 			if strings.HasPrefix(c, synonim) {
-				changes[label] = append(changes[label], strings.TrimPrefix(c, synonim))
+				changes[label] = append(changes[label], strings.Join(strings.Split(c, " ")[1:], " "))
 				break
 			}
 
 			if strings.Contains(c, synonim) {
-				changes[label] = append(changes[label], strings.TrimPrefix(c, synonim))
+				changes[label] = append(changes[label], c)
 				break
 			}
 		}
