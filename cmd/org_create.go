@@ -25,7 +25,7 @@ var orgCreateCmd = &cobra.Command{
 
 var prBodyTemplate = `
 ----
-Release PR created with ` + "`train v" + Version + "`"
+Release PR created with ` + "`train " + Version + "`"
 
 func orgCreateFunc(cmd *cobra.Command, args []string) {
 	uiprogress.Start()
