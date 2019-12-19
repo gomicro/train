@@ -11,7 +11,7 @@ func init() {
 var (
 	// Version is the current version of train, made available for use through
 	// out the application.
-	Version = "0.0.6"
+	Version string
 )
 
 var versionCmd = &cobra.Command{
@@ -22,5 +22,9 @@ var versionCmd = &cobra.Command{
 }
 
 func versionFunc(cmd *cobra.Command, args []string) {
-	printf("Train version %v", Version)
+	if Version == "" {
+		printf("Train version dev-local")
+	} else {
+		printf("Train version %v", Version)
+	}
 }
