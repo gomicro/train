@@ -9,7 +9,7 @@ func init() {
 }
 
 var userCmd = &cobra.Command{
-	Use:   "user [flags]",
+	Use:   "user",
 	Short: "User specific release train commands",
 	Long:  `User specific release train commands`,
 }
