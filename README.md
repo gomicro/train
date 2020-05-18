@@ -1,5 +1,5 @@
 # Train
-[![Build Status](https://travis-ci.com/gomicro/train.svg?branch=master)](https://travis-ci.org/gomicro/train)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/gomicro/train/Build/master)](https://github.com/gomicro/train/actions?query=workflow%3ABuild)
 [![Go Reportcard](https://goreportcard.com/badge/github.com/gomicro/train)](https://goreportcard.com/report/github.com/gomicro/train)
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/gomicro/train)
 [![License](https://img.shields.io/github/license/gomicro/train.svg)](https://github.com/gomicro/train/blob/master/LICENSE.md)
