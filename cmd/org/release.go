@@ -1,4 +1,4 @@
-package cmd
+package org
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	orgCmd.AddCommand(orgReleaseCmd)
+	OrgCmd.AddCommand(orgReleaseCmd)
 }
 
 var orgReleaseCmd = &cobra.Command{

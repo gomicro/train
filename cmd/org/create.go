@@ -1,4 +1,4 @@
-package cmd
+package org
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	orgCmd.AddCommand(orgCreateCmd)
+	OrgCmd.AddCommand(orgCreateCmd)
 }
 
 var orgCreateCmd = &cobra.Command{

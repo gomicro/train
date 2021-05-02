@@ -1,14 +1,10 @@
-package cmd
+package org
 
 import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(orgCmd)
-}
-
-var orgCmd = &cobra.Command{
+var OrgCmd = &cobra.Command{
 	Use:   "org [flags]",
 	Short: "Org specific release train commands",
 	Long:  `Org specific release train commands`,
