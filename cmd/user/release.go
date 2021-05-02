@@ -1,4 +1,4 @@
-package cmd
+package user
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	userCmd.AddCommand(userReleaseCmd)
+	UserCmd.AddCommand(userReleaseCmd)
 }
 
 var userReleaseCmd = &cobra.Command{
