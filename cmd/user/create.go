@@ -28,12 +28,12 @@ func userCreateFunc(cmd *cobra.Command, args []string) {
 
 	repos, err := getUserRepos(args[0])
 	if err != nil {
-		printf("user repos: %v", err.Error())
+		fmt.Printf("user repos: %v\n", err.Error())
 		os.Exit(1)
 	}
 
 	if len(repos) < 1 {
-		printf("github: no repos found")
+		fmt.Println("github: no repos found")
 		return
 	}
 
@@ -65,7 +65,7 @@ func userCreateFunc(cmd *cobra.Command, args []string) {
 				continue
 			}
 
-			printf("process repo: %v", err.Error())
+			fmt.Printf("process repo: %v\n", err.Error())
 			os.Exit(1)
 		}
 
@@ -78,15 +78,15 @@ func userCreateFunc(cmd *cobra.Command, args []string) {
 	uiprogress.Stop()
 
 	if len(urls) > 0 {
-		printf("")
+		fmt.Println()
 		if dryRun {
-			printf("(Dryrun) Release PRs Created:")
+			fmt.Println("(Dryrun) Release PRs Created:")
 		} else {
-			printf("Release PRs Created:")
+			fmt.Println("Release PRs Created:")
 		}
 
 		for _, url := range urls {
-			printf(url)
+			fmt.Println(url)
 		}
 
 		return

@@ -35,7 +35,7 @@ func init() {
 
 	pool, err := gocertifi.CACerts()
 	if err != nil {
-		printf("failed to create cert pool: %v", err.Error())
+		fmt.Printf("failed to create cert pool: %v\n", err.Error())
 		os.Exit(1)
 	}
 
@@ -52,7 +52,7 @@ func init() {
 	token := os.Getenv("TRAIN_GHTOKEN")
 
 	if token == "" {
-		printf("warning: TRAIN_GHTOKEN missing")
+		fmt.Printf("warning: TRAIN_GHTOKEN missing\n")
 	}
 
 	clientCtx = context.Background()
@@ -82,17 +82,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		printf("Failed to execute: %v", err.Error())
+		fmt.Printf("Failed to execute: %v\n", err.Error())
 		os.Exit(1)
-	}
-}
-
-func printf(f string, args ...interface{}) {
-	fmt.Println(fmt.Sprintf(f, args...))
-}
-
-func verbosef(f string, args ...interface{}) {
-	if verbose {
-		fmt.Println(fmt.Sprintf(f, args...))
 	}
 }

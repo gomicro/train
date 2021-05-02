@@ -1,6 +1,7 @@
 package org
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/gosuri/uiprogress"
@@ -22,39 +23,39 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 
 	repos, err := getOrgRepos(args[0])
 	if err != nil {
-		printf("org repos: %v", err.Error())
+		fmt.Printf("org repos: %v\n", err.Error())
 		os.Exit(1)
 	}
 
 	if len(repos) < 1 {
-		printf("github: no repos found")
+		fmt.Println("github: no repos found")
 		return
 	}
 
 	releases, err := getReleases(repos)
 	if err != nil {
-		printf("releases: %v", err.Error())
+		fmt.Printf("releases: %v\n", err.Error())
 		os.Exit(1)
 	}
 
 	urls, err := release(releases, dryRun)
 	if err != nil {
-		printf("releasing: %v", err.Error())
+		fmt.Printf("releasing: %v\n", err.Error())
 		os.Exit(1)
 	}
 
 	uiprogress.Stop()
 
 	if len(urls) > 0 {
-		printf("")
+		fmt.Println()
 		if dryRun {
-			printf("(Dryrun) Repos Released:")
+			fmt.Println("(Dryrun) Repos Released:")
 		} else {
-			printf("Repos Released:")
+			fmt.Println("Repos Released:")
 		}
 
 		for _, url := range urls {
-			printf(url)
+			fmt.Println(url)
 		}
 
 		return

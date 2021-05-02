@@ -32,12 +32,12 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 
 	repos, err := getOrgRepos(args[0])
 	if err != nil {
-		printf("org repos: %v", err.Error())
+		fmt.Printf("org repos: %v\n", err.Error())
 		os.Exit(1)
 	}
 
 	if len(repos) < 1 {
-		printf("github: no repos found")
+		fmt.Printf("github: no repos found\n")
 		return
 	}
 
@@ -69,7 +69,7 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 				continue
 			}
 
-			printf("process repo: %v", err.Error())
+			fmt.Printf("process repo: %v\n", err.Error())
 			os.Exit(1)
 		}
 
@@ -82,15 +82,15 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 	uiprogress.Stop()
 
 	if len(urls) > 0 {
-		printf("")
+		fmt.Println()
 		if dryRun {
-			printf("(Dryrun) Release PRs Created:")
+			fmt.Println("(Dryrun) Release PRs Created:")
 		} else {
-			printf("Release PRs Created:")
+			fmt.Println("Release PRs Created:")
 		}
 
 		for _, url := range urls {
-			printf(url)
+			fmt.Println(url)
 		}
 
 		return
