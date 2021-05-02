@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"github.com/certifi/gocertifi"
+	"github.com/gomicro/train/cmd/org"
+	"github.com/gomicro/train/cmd/user"
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
@@ -63,6 +65,9 @@ func init() {
 	)
 
 	client = github.NewClient(oauth2.NewClient(clientCtx, ts))
+
+	rootCmd.AddCommand(user.UserCmd)
+	rootCmd.AddCommand(org.OrgCmd)
 }
 
 func initEnvs() {
