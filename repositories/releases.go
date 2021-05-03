@@ -9,6 +9,8 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
+// GetReleases takes a context, github client, and respos to iterate and collects
+// release pull requests for the repos.
 func GetReleases(ctx context.Context, client *github.Client, repos []*github.Repository) ([]*github.PullRequest, error) {
 	var releases []*github.PullRequest
 
@@ -53,6 +55,9 @@ func GetReleases(ctx context.Context, client *github.Client, repos []*github.Rep
 	return releases, nil
 }
 
+// Release takex context, githug blient, a list of releases, and whether or not
+// to perform a dry run. If it is not a dry run and the pull request is
+// mergeable, it will merge it.
 func Release(ctx context.Context, client *github.Client, releases []*github.PullRequest, dryRun bool) ([]string, error) {
 	var released []string
 

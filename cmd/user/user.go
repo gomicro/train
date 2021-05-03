@@ -20,6 +20,7 @@ var (
 	clientCtx context.Context
 )
 
+// UserCmd represents the root of the user command
 var UserCmd = &cobra.Command{
 	Use:              "user",
 	Short:            "User specific release train commands",
