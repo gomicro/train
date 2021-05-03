@@ -1,70 +1,32 @@
 package cmd
 
 import (
-	"context"
-	"crypto/tls"
 	"fmt"
-	"net/http"
 	"os"
 
-	"github.com/certifi/gocertifi"
 	"github.com/gomicro/train/cmd/org"
 	"github.com/gomicro/train/cmd/user"
-	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
-)
-
-const (
-	defaultMaxIdleConns        = 25
-	defaultMaxIdleConnsPerHost = 25
-)
-
-var (
-	verbose   bool
-	dryRun    bool
-	client    *github.Client
-	clientCtx context.Context
+	"github.com/spf13/viper"
 )
 
 func init() {
 	cobra.OnInitialize(initEnvs)
 
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "show more verbose output")
-	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dryRun", "d", false, "attempt the specified command without actually making live changes")
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "show more verbose output")
+	rootCmd.PersistentFlags().BoolP("dryRun", "d", false, "attempt the specified command without actually making live changes")
 
-	pool, err := gocertifi.CACerts()
+	err := viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 	if err != nil {
-		fmt.Printf("failed to create cert pool: %v\n", err.Error())
+		fmt.Printf("Error setting up: %v\n", err.Error())
 		os.Exit(1)
 	}
 
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConns:        defaultMaxIdleConns,
-			MaxIdleConnsPerHost: defaultMaxIdleConnsPerHost,
-			TLSClientConfig: &tls.Config{
-				RootCAs: pool,
-			},
-		},
+	err = viper.BindPFlag("dryRun", rootCmd.PersistentFlags().Lookup("dryRun"))
+	if err != nil {
+		fmt.Printf("Error setting up: %v\n", err.Error())
+		os.Exit(1)
 	}
-
-	token := os.Getenv("TRAIN_GHTOKEN")
-
-	if token == "" {
-		fmt.Printf("warning: TRAIN_GHTOKEN missing\n")
-	}
-
-	clientCtx = context.Background()
-	clientCtx = context.WithValue(clientCtx, oauth2.HTTPClient, httpClient)
-
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{
-			AccessToken: token,
-		},
-	)
-
-	client = github.NewClient(oauth2.NewClient(clientCtx, ts))
 
 	rootCmd.AddCommand(user.UserCmd)
 	rootCmd.AddCommand(org.OrgCmd)
