@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -23,8 +25,8 @@ var versionCmd = &cobra.Command{
 
 func versionFunc(cmd *cobra.Command, args []string) {
 	if Version == "" {
-		printf("Train version dev-local")
+		fmt.Printf("Train version dev-local\n")
 	} else {
-		printf("Train version %v", Version)
+		fmt.Printf("Train version %v\n", Version)
 	}
 }
