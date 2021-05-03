@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gomicro/train/repositories"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 )
@@ -32,13 +33,13 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	releases, err := getReleases(repos)
+	releases, err := repositories.GetReleases(clientCtx, client, repos)
 	if err != nil {
 		fmt.Printf("releases: %v\n", err.Error())
 		os.Exit(1)
 	}
 
-	urls, err := release(releases, dryRun)
+	urls, err := repositories.Release(clientCtx, client, releases, dryRun)
 	if err != nil {
 		fmt.Printf("releasing: %v\n", err.Error())
 		os.Exit(1)
