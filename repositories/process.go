@@ -8,9 +8,13 @@ import (
 	"github.com/google/go-github/github"
 )
 
+var prBodyTemplate = `
+----
+Release PR created with ` + "`train`"
+
 // Process takes a github client, context for the client, and a repo to process.
 // It returns the resulting pull request URL or an error if any are encountered.
-func Process(ctx context.Context, client *github.Client, repo *github.Repository, prBodyTemplate string, dryRun bool) (string, error) {
+func Process(ctx context.Context, client *github.Client, repo *github.Repository, dryRun bool) (string, error) {
 	name := repo.GetName()
 	owner := repo.GetOwner().GetLogin()
 	head := repo.GetDefaultBranch()

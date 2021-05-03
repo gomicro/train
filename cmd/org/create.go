@@ -23,10 +23,6 @@ var orgCreateCmd = &cobra.Command{
 	Run:   orgCreateFunc,
 }
 
-var prBodyTemplate = `
-----
-Release PR created with ` + "`train " + Version + "`"
-
 func orgCreateFunc(cmd *cobra.Command, args []string) {
 	uiprogress.Start()
 
@@ -62,7 +58,7 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 		owner = repo.GetOwner().GetLogin()
 		appendStr = fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
-		url, err := repositories.Process(clientCtx, client, repo, prBodyTemplate, dryRun)
+		url, err := repositories.Process(clientCtx, client, repo, dryRun)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "get branch: ") || strings.HasPrefix(err.Error(), "no commits") {
 				bar.Incr()
