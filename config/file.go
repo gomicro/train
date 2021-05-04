@@ -15,7 +15,7 @@ const (
 
 // Config represents the config file for train
 type Config struct {
-	ReleaseBranch string `yaml:"release_branck"`
+	ReleaseBranch string `yaml:"release_branch"`
 	Github        Host   `yaml:"github.com"`
 }
 
