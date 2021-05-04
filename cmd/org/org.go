@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gomicro/train/config"
+
 	"github.com/gomicro/trust"
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
@@ -42,10 +44,10 @@ func configClient(cmd *cobra.Command, args []string) {
 		},
 	}
 
-	token := os.Getenv("TRAIN_GHTOKEN")
-
-	if token == "" {
-		fmt.Printf("warning: TRAIN_GHTOKEN missing\n")
+	config, err := config.ParseFromFile()
+	if err != nil {
+		fmt.Printf("error: %v", err.Error())
+		os.Exit(1)
 	}
 
 	clientCtx = context.Background()
@@ -53,7 +55,7 @@ func configClient(cmd *cobra.Command, args []string) {
 
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{
-			AccessToken: token,
+			AccessToken: config.Github.Token,
 		},
 	)
 
