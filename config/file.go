@@ -23,6 +23,10 @@ type Host struct {
 	Token string `yaml:"token"`
 }
 
+func New(tkn string) *Config {
+	return &Config{Github: Host{Token: tkn}}
+}
+
 // ParseFromFile reads the train config file from the home directory. It returns
 // any errors it encounters with parsing the file.
 func ParseFromFile() (*Config, error) {
@@ -43,4 +47,23 @@ func ParseFromFile() (*Config, error) {
 	}
 
 	return &conf, nil
+}
+
+func (c *Config) WriteFile() error {
+	b, err := yaml.Marshal(c)
+	if err != nil {
+		return fmt.Errorf("config: marshal: %v", err.Error())
+	}
+
+	usr, err := user.Current()
+	if err != nil {
+		return fmt.Errorf("config: get home directory: %v", err.Error())
+	}
+
+	err = ioutil.WriteFile(filepath.Join(usr.HomeDir, filename), b, 600)
+	if err != nil {
+		return fmt.Errorf("config: write file: %v", err.Error())
+	}
+
+	return nil
 }
