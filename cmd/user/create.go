@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -24,9 +25,11 @@ var userCreateCmd = &cobra.Command{
 }
 
 func userCreateFunc(cmd *cobra.Command, args []string) {
+	ctx := context.Background()
+
 	uiprogress.Start()
 
-	repos, err := getUserRepos(args[0])
+	repos, err := getUserRepos(ctx, args[0])
 	if err != nil {
 		fmt.Printf("user repos: %v\n", err.Error())
 		os.Exit(1)
@@ -58,7 +61,7 @@ func userCreateFunc(cmd *cobra.Command, args []string) {
 		owner = repo.GetOwner().GetLogin()
 		appendStr = fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
-		url, err := repositories.Process(clientCtx, client, repo, dryRun)
+		url, err := repositories.Process(ctx, client, repo, dryRun)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "get branch: ") || strings.HasPrefix(err.Error(), "no commits") {
 				bar.Incr()
@@ -93,8 +96,8 @@ func userCreateFunc(cmd *cobra.Command, args []string) {
 	}
 }
 
-func getUserRepos(username string) ([]*github.Repository, error) {
-	u, _, err := client.Users.Get(clientCtx, username)
+func getUserRepos(ctx context.Context, username string) ([]*github.Repository, error) {
+	u, _, err := client.Users.Get(ctx, username)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %v", err.Error())
 	}
@@ -119,7 +122,7 @@ func getUserRepos(username string) ([]*github.Repository, error) {
 	}
 
 	for {
-		rs, resp, err := client.Repositories.List(clientCtx, username, nil)
+		rs, resp, err := client.Repositories.List(ctx, username, nil)
 		if err != nil {
 			if _, ok := err.(*github.RateLimitError); ok {
 				return nil, fmt.Errorf("github: hit rate limit")

@@ -1,6 +1,7 @@
 package org
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -24,9 +25,11 @@ var orgCreateCmd = &cobra.Command{
 }
 
 func orgCreateFunc(cmd *cobra.Command, args []string) {
+	ctx := context.Background()
+
 	uiprogress.Start()
 
-	repos, err := getOrgRepos(args[0])
+	repos, err := getOrgRepos(ctx, args[0])
 	if err != nil {
 		fmt.Printf("org repos: %v\n", err.Error())
 		os.Exit(1)
@@ -58,7 +61,7 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 		owner = repo.GetOwner().GetLogin()
 		appendStr = fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
-		url, err := repositories.Process(clientCtx, client, repo, dryRun)
+		url, err := repositories.Process(ctx, client, repo, dryRun)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "get branch: ") || strings.HasPrefix(err.Error(), "no commits") {
 				bar.Incr()
@@ -93,8 +96,8 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 	}
 }
 
-func getOrgRepos(org string) ([]*github.Repository, error) {
-	o, _, err := client.Organizations.Get(clientCtx, org)
+func getOrgRepos(ctx context.Context, org string) ([]*github.Repository, error) {
+	o, _, err := client.Organizations.Get(ctx, org)
 	if err != nil {
 		return nil, fmt.Errorf("get org: %v", err.Error())
 	}
@@ -119,7 +122,7 @@ func getOrgRepos(org string) ([]*github.Repository, error) {
 	}
 
 	for {
-		rs, resp, err := client.Repositories.ListByOrg(clientCtx, org, opts)
+		rs, resp, err := client.Repositories.ListByOrg(ctx, org, opts)
 		if err != nil {
 			if _, ok := err.(*github.RateLimitError); ok {
 				return nil, fmt.Errorf("github: hit rate limit")
