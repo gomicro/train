@@ -51,6 +51,8 @@ jobs:
     env:
       GOPATH: ${{ github.workspace }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
 
     steps:
 

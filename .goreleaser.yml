@@ -5,6 +5,8 @@ builds:
 
   ldflags:
     - -X "github.com/gomicro/train/cmd.Version={{.Env.VERSION}}"
+    - -X "github.com/gomicro/train/cmd.clientID={{.Env.CLIENT_ID}}"
+    - -X "github.com/gomicro/train/cmd.clientSecret={{.Env.CLIENT_SECRET}}"
 
   goos:
     - darwin
