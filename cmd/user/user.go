@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	base   string
 	dryRun bool
 	client *github.Client
 )
@@ -25,11 +26,21 @@ var UserCmd = &cobra.Command{
 }
 
 func setupCommand(cmd *cobra.Command, args []string) {
-	var err error
-	client, err = config.GetClient()
+	c, err := config.ParseFromFile()
 	if err != nil {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(1)
+	}
+
+	client, err = c.GetClient()
+	if err != nil {
+		fmt.Printf("Error: %v", err.Error())
+		os.Exit(1)
+	}
+
+	base = "release"
+	if c.ReleaseBranch != "" {
+		base = c.ReleaseBranch
 	}
 
 	dryRun = viper.GetBool("dryRun")
