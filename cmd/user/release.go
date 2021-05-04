@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -20,9 +21,11 @@ var userReleaseCmd = &cobra.Command{
 }
 
 func userReleaseFunc(cmd *cobra.Command, args []string) {
+	ctx := context.Background()
+
 	uiprogress.Start()
 
-	repos, err := getUserRepos(args[0])
+	repos, err := getUserRepos(ctx, args[0])
 	if err != nil {
 		fmt.Printf("user repos: %v\n", err.Error())
 		os.Exit(1)
@@ -33,13 +36,13 @@ func userReleaseFunc(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	releases, err := repositories.GetReleases(clientCtx, client, repos)
+	releases, err := repositories.GetReleases(ctx, client, repos)
 	if err != nil {
 		fmt.Printf("releases: %v\n", err.Error())
 		os.Exit(1)
 	}
 
-	urls, err := repositories.Release(clientCtx, client, releases, dryRun)
+	urls, err := repositories.Release(ctx, client, releases, dryRun)
 	if err != nil {
 		fmt.Printf("releasing: %v\n", err.Error())
 		os.Exit(1)

@@ -1,6 +1,7 @@
 package org
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -20,9 +21,11 @@ var orgReleaseCmd = &cobra.Command{
 }
 
 func orgReleaseFunc(cmd *cobra.Command, args []string) {
+	ctx := context.Background()
+
 	uiprogress.Start()
 
-	repos, err := getOrgRepos(args[0])
+	repos, err := getOrgRepos(ctx, args[0])
 	if err != nil {
 		fmt.Printf("org repos: %v\n", err.Error())
 		os.Exit(1)
@@ -33,13 +36,13 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	releases, err := repositories.GetReleases(clientCtx, client, repos)
+	releases, err := repositories.GetReleases(ctx, client, repos)
 	if err != nil {
 		fmt.Printf("releases: %v\n", err.Error())
 		os.Exit(1)
 	}
 
-	urls, err := repositories.Release(clientCtx, client, releases, dryRun)
+	urls, err := repositories.Release(ctx, client, releases, dryRun)
 	if err != nil {
 		fmt.Printf("releasing: %v\n", err.Error())
 		os.Exit(1)
