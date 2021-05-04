@@ -29,6 +29,18 @@ func orgCreateFunc(cmd *cobra.Command, args []string) {
 
 	uiprogress.Start()
 
+	fmt.Printf("Org: %v\n", args[0])
+	fmt.Printf("Base: %v\n", base)
+
+	if dryRun {
+		fmt.Println()
+		fmt.Println("===============")
+		fmt.Println("Doing a dry run")
+		fmt.Println("===============")
+	}
+
+	fmt.Println()
+
 	repos, err := getOrgRepos(ctx, args[0])
 	if err != nil {
 		fmt.Printf("org repos: %v\n", err.Error())

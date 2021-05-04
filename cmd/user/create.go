@@ -29,6 +29,18 @@ func userCreateFunc(cmd *cobra.Command, args []string) {
 
 	uiprogress.Start()
 
+	fmt.Printf("User: %v\n", args[0])
+	fmt.Printf("Base: %v\n", base)
+
+	if dryRun {
+		fmt.Println()
+		fmt.Println("===============")
+		fmt.Println("Doing a dry run")
+		fmt.Println("===============")
+	}
+
+	fmt.Println()
+
 	repos, err := getUserRepos(ctx, args[0])
 	if err != nil {
 		fmt.Printf("user repos: %v\n", err.Error())
