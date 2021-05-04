@@ -11,7 +11,7 @@ import (
 
 // GetReleases takes a context, github client, and respos to iterate and collects
 // release pull requests for the repos.
-func GetReleases(ctx context.Context, client *github.Client, repos []*github.Repository) ([]*github.PullRequest, error) {
+func GetReleases(ctx context.Context, client *github.Client, repos []*github.Repository, base string) ([]*github.PullRequest, error) {
 	var releases []*github.PullRequest
 
 	count := len(repos)
@@ -34,7 +34,6 @@ func GetReleases(ctx context.Context, client *github.Client, repos []*github.Rep
 		name = repo.GetName()
 		appendStr = fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 		head := repo.GetDefaultBranch()
-		base := "release"
 
 		opts := &github.PullRequestListOptions{
 			Head: head,
