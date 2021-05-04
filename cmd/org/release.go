@@ -36,7 +36,7 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	releases, err := repositories.GetReleases(ctx, client, repos)
+	releases, err := repositories.GetReleases(ctx, client, repos, base)
 	if err != nil {
 		fmt.Printf("releases: %v\n", err.Error())
 		os.Exit(1)
