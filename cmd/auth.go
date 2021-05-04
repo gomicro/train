@@ -160,7 +160,7 @@ func authHandler(ctx context.Context, conf *oauth2.Config, token chan string) fu
 </html>`
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(body))
+		w.Write([]byte(body)) //nolint
 		token <- tok.AccessToken
 	}
 }
