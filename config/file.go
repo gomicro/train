@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/user"
 	"path/filepath"
 
@@ -50,6 +51,24 @@ func ParseFromFile() (*Config, error) {
 	return &conf, nil
 }
 
+func ConfigFileExists() (bool, error) {
+	usr, err := user.Current()
+	if err != nil {
+		return false, fmt.Errorf("Failed getting home directory: %v", err.Error())
+	}
+
+	_, err = os.Stat(filepath.Join(usr.HomeDir, filename))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		} else {
+			return false, fmt.Errorf("Failed to confirm config file existence: %v", err.Error())
+		}
+	}
+
+	return true, nil
+}
+
 func (c *Config) WriteFile() error {
 	b, err := yaml.Marshal(c)
 	if err != nil {
@@ -61,7 +80,7 @@ func (c *Config) WriteFile() error {
 		return fmt.Errorf("config: get home directory: %v", err.Error())
 	}
 
-	err = ioutil.WriteFile(filepath.Join(usr.HomeDir, filename), b, 600)
+	err = ioutil.WriteFile(filepath.Join(usr.HomeDir, filename), b, 0600)
 	if err != nil {
 		return fmt.Errorf("config: write file: %v", err.Error())
 	}
