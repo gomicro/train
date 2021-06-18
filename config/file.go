@@ -80,7 +80,7 @@ func (c *Config) WriteFile() error {
 		return fmt.Errorf("config: get home directory: %v", err.Error())
 	}
 
-	err = ioutil.WriteFile(filepath.Join(usr.HomeDir, filename), b, 600)
+	err = ioutil.WriteFile(filepath.Join(usr.HomeDir, filename), b, 0600)
 	if err != nil {
 		return fmt.Errorf("config: write file: %v", err.Error())
 	}
