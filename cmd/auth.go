@@ -101,24 +101,13 @@ func authFunc(cmd *cobra.Command, args []string) {
 	tkn := <-token
 	close(token)
 
-	exists, err := config.FileExists()
+	c, err := config.ParseFromFile()
 	if err != nil {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(1)
 	}
 
-	var c *config.Config
-	if exists {
-		c, err = config.ParseFromFile()
-		if err != nil {
-			fmt.Printf("Error: %v", err.Error())
-			os.Exit(1)
-		}
-
-		c.Github.Token = tkn
-	} else {
-		c = config.New(tkn)
-	}
+	c.Github.Token = tkn
 
 	err = c.WriteFile()
 	if err != nil {
