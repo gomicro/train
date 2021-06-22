@@ -101,7 +101,7 @@ func authFunc(cmd *cobra.Command, args []string) {
 	tkn := <-token
 	close(token)
 
-	exists, err := config.ConfigFileExists()
+	exists, err := config.FileExists()
 	if err != nil {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(1)
