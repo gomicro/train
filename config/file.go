@@ -25,6 +25,8 @@ type Host struct {
 	Token string `yaml:"token"`
 }
 
+// New takes a token string and creates the most basic config capable of being
+// written.
 func New(tkn string) *Config {
 	return &Config{Github: Host{Token: tkn}}
 }
@@ -51,7 +53,10 @@ func ParseFromFile() (*Config, error) {
 	return &conf, nil
 }
 
-func ConfigFileExists() (bool, error) {
+// FileExists returns a bool and error representing whether or not a
+// config file exists for the current user, and any errors it encounters with
+// statting the existence of the file.
+func FileExists() (bool, error) {
 	usr, err := user.Current()
 	if err != nil {
 		return false, fmt.Errorf("Failed getting home directory: %v", err.Error())
@@ -61,14 +66,15 @@ func ConfigFileExists() (bool, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false, nil
-		} else {
-			return false, fmt.Errorf("Failed to confirm config file existence: %v", err.Error())
 		}
+		return false, fmt.Errorf("Failed to confirm config file existence: %v", err.Error())
 	}
 
 	return true, nil
 }
 
+// WriteFile writes the file to the defined location for the current user, and
+// returns any errors encountered doing so.
 func (c *Config) WriteFile() error {
 	b, err := yaml.Marshal(c)
 	if err != nil {
