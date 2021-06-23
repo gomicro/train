@@ -1,0 +1,47 @@
+project:
+  name: train
+steps:
+  build:
+    help: Build the project
+    envs:
+      CGO_ENABLED: 0
+      GOOS: '{{.Os}}'
+    cmd: |
+      go build -ldflags "-X 'github.com/gomicro/train/cmd.Version=dev-{{.ShortSha}}' \
+                         -X 'github.com/gomicro/train/cmd.clientID=$TRAIN_CLIENT_ID' \
+                         -X 'github.com/gomicro/train/cmd.clientSecret=$TRAIN_CLIENT_SECRET'" \
+        -o {{.Project}} .
+  clean:
+    help: Clean up all generated files
+    cmd: go clean
+  fmt:
+    help: Run gofmt
+    cmd: go fmt ./...
+  linters:
+    help: Run all the linters
+    steps:
+      - lint
+      - fmt
+      - vet
+  lint:
+    help: Run golangci-lint
+    cmd: golangci-lint run
+  install:
+    help: Install the binary
+    envs:
+      CGO_ENABLED: 0
+      GOOS: '{{.Os}}'
+    cmd: |
+      go install -ldflags "-X 'github.com/gomicro/train/cmd.Version=dev-$(git rev-parse --short HEAD)' \
+                         -X 'github.com/gomicro/train/cmd.clientID=$TRAIN_CLIENT_ID' \
+                         -X 'github.com/gomicro/train/cmd.clientSecret=$TRAIN_CLIENT_SECRET'"
+  test:
+    help: Run all available tests
+    steps:
+    - unit test
+  unit_test:
+    help: Run the unit tests
+    cmd: go test ./...
+  vet:
+    help: Run go vet
+    cmd: go vet ./...
