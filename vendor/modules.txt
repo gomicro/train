@@ -1,16 +1,22 @@
 # github.com/fsnotify/fsnotify v1.5.1
+## explicit
 github.com/fsnotify/fsnotify
 # github.com/golang/protobuf v1.5.2
 github.com/golang/protobuf/proto
 # github.com/gomicro/trust v0.0.1
+## explicit
 github.com/gomicro/trust
 # github.com/google/go-github v17.0.0+incompatible
+## explicit
 github.com/google/go-github/github
 # github.com/google/go-querystring v1.1.0
+## explicit
 github.com/google/go-querystring/query
 # github.com/gosuri/uilive v0.0.4
+## explicit
 github.com/gosuri/uilive
 # github.com/gosuri/uiprogress v0.0.1
+## explicit
 github.com/gosuri/uiprogress
 github.com/gosuri/uiprogress/util/strutil
 # github.com/hashicorp/hcl v1.0.0
@@ -29,6 +35,7 @@ github.com/inconshreveable/mousetrap
 # github.com/magiconair/properties v1.8.5
 github.com/magiconair/properties
 # github.com/mattn/go-isatty v0.0.13
+## explicit
 github.com/mattn/go-isatty
 # github.com/mitchellh/mapstructure v1.4.1
 github.com/mitchellh/mapstructure
@@ -38,27 +45,34 @@ github.com/pelletier/go-toml
 github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.4.1
+## explicit
 github.com/spf13/cast
 # github.com/spf13/cobra v1.2.1
+## explicit
 github.com/spf13/cobra
 # github.com/spf13/jwalterweatherman v1.1.0
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # github.com/spf13/viper v1.8.1
+## explicit
 github.com/spf13/viper
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
 # golang.org/x/net v0.0.0-20210825183410-e898025ed96a
+## explicit
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 # golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
+## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
 # golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
+## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.7
+## explicit
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
 # google.golang.org/appengine v1.6.7
@@ -70,6 +84,7 @@ google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
 # google.golang.org/protobuf v1.27.1
+## explicit
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/descfmt
@@ -100,4 +115,5 @@ google.golang.org/protobuf/types/descriptorpb
 # gopkg.in/ini.v1 v1.62.0
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
+## explicit
 gopkg.in/yaml.v2
