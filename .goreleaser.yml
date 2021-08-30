@@ -7,6 +7,7 @@ builds:
     - -X "github.com/gomicro/train/cmd.Version={{.Env.VERSION}}"
     - -X "github.com/gomicro/train/cmd.clientID={{.Env.TRAIN_CLIENT_ID}}"
     - -X "github.com/gomicro/train/cmd.clientSecret={{.Env.TRAIN_CLIENT_SECRET}}"
+    - "-s -w"
 
   goos:
     - darwin
@@ -16,3 +17,13 @@ builds:
 archives:
   -
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+dockers:
+  -
+    goos: linux
+
+    goarch: amd64
+
+    image_templates:
+      - "gomicro/train:latest"
+      - "gomicro/train:{{ .Env.VERSION }}"

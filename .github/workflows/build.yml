@@ -53,6 +53,8 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TRAIN_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
       TRAIN_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
 
     steps:
 
