@@ -39,8 +39,8 @@ jobs:
         path: ./src/github.com/${{ github.repository }}
 
     - name: Test
-      working-directory: ${{ github.workspace }}/src/github.com/${{ github.repository }}
-      run: make test
+      uses: gomicro/forge-action
+      run: test
 
   deploy:
     name: Deploy
