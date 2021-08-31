@@ -1,1 +1,5 @@
-train
+# Binaries
+/train
+
+# Generated Files
+coverage.txt
