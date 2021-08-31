@@ -1,5 +1,10 @@
 project:
   name: train
+
+envs:
+  DOCKER_PASSWORD: $DOCKER_PASSWORD
+  DOCKER_USERNAME: $DOCKER_USERNAME
+
 steps:
   build:
     help: Build the project
@@ -14,7 +19,18 @@ steps:
       -o {{.Project}} .
   clean:
     help: Clean up all generated files
-    cmd: go clean
+    cmds:
+      - go clean
+      - rm -f coverage.txt
+  coverage:
+    help: generate coverage
+    cmd: docker run -v $PWD:/src gomicro/gocover
+  deploy:
+    help: deploy the artifacts
+    cmds:
+      - echo "Logging into Docker Hub"
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - "VERSION={{.ShortSha}} goreleaser release"
   fmt:
     help: Run gofmt
     cmd: go fmt ./...
@@ -34,7 +50,7 @@ steps:
       GOOS: '{{.Os}}'
     cmd: >
       go install -ldflags
-      "-X 'github.com/gomicro/train/cmd.Version=dev-$(git rev-parse --short HEAD)'
+      "-X 'github.com/gomicro/train/cmd.Version=dev-{{.ShortSha}}'
       -X 'github.com/gomicro/train/cmd.clientID=$TRAIN_CLIENT_ID'
       -X 'github.com/gomicro/train/cmd.clientSecret=$TRAIN_CLIENT_SECRET'"
   test:
