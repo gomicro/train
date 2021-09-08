@@ -75,7 +75,7 @@ func Process(ctx context.Context, client *github.Client, repo *github.Repository
 		return pr.GetHTMLURL(), nil
 	}
 
-	return fmt.Sprintf("dryrun://github.com/%v/%v", owner, name), nil
+	return fmt.Sprintf("https://github.com/%v/%v/compare/%v...%v", owner, name, base, head), nil
 }
 
 func changeLog(ctx context.Context, client *github.Client, owner, name, base, head string) (map[string][]string, error) {
