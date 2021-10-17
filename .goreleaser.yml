@@ -4,9 +4,9 @@ builds:
     - CGO_ENABLED=0
 
   ldflags:
-    - -X "github.com/gomicro/train/cmd.Version={{.Env.VERSION}}"
-    - -X "github.com/gomicro/train/cmd.clientID={{.Env.TRAIN_CLIENT_ID}}"
-    - -X "github.com/gomicro/train/cmd.clientSecret={{.Env.TRAIN_CLIENT_SECRET}}"
+    - -X "github.com/gomicro/train/cmd.Version={{ .Version }}"
+    - -X "github.com/gomicro/train/cmd.clientID={{ .Env.TRAIN_CLIENT_ID }}"
+    - -X "github.com/gomicro/train/cmd.clientSecret={{ .Env.TRAIN_CLIENT_SECRET }}"
     - "-s -w"
 
   goos:
@@ -25,5 +25,5 @@ dockers:
     goarch: amd64
 
     image_templates:
-      - "gomicro/train:latest"
-      - "gomicro/train:{{ .Env.VERSION }}"
+      - "ghcr.io/gomicro/train:latest"
+      - "ghcr.io/gomicro/train:{{ .Version }}"
