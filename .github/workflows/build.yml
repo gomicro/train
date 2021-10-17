@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
@@ -31,7 +31,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        fetch-depth: 1
+        fetch-depth: 0
 
     - name: Test
       run: make test
@@ -59,7 +59,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        fetch-depth: 1
+        fetch-depth: 0
 
     - name: Install GoReleaser
       uses: goreleaser/goreleaser-action@v2
