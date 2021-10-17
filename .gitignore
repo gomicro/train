@@ -1,5 +1,8 @@
 # Binaries
 train
 
+#Directories
+/dist
+
 # Generated Files
 coverage.txt
