@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gomicro/train/client"
 	"github.com/gomicro/train/config"
 
-	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -14,7 +14,7 @@ import (
 var (
 	base   string
 	dryRun bool
-	client *github.Client
+	clt    *client.Client
 )
 
 // UserCmd represents the root of the user command
@@ -32,7 +32,7 @@ func setupCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	client, err = c.GetClient()
+	clt, err = client.New(c.Github.Token)
 	if err != nil {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(1)
