@@ -115,7 +115,7 @@ func (c *Client) GetUserRepos(ctx context.Context, username string) ([]*github.R
 	return repos, nil
 }
 
-func (c *Client) ProcessRepos(ctx context.Context, repos []*github.Repository, base string, dryRun bool) ([]string, error) {
+func (c *Client) ProcessRepos(ctx context.Context, repos []*github.Repository, dryRun bool) ([]string, error) {
 	count := len(repos)
 	name := repos[0].GetName()
 	owner := repos[0].GetOwner().GetLogin()
@@ -137,7 +137,7 @@ func (c *Client) ProcessRepos(ctx context.Context, repos []*github.Repository, b
 		owner = repo.GetOwner().GetLogin()
 		appendStr = fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
-		url, err := c.processRepo(ctx, repo, base, dryRun)
+		url, err := c.processRepo(ctx, repo, dryRun)
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "get branch: ") || strings.HasPrefix(err.Error(), "no commits") {
 				bar.Incr()
@@ -157,19 +157,19 @@ func (c *Client) ProcessRepos(ctx context.Context, repos []*github.Repository, b
 	return urls, nil
 }
 
-func (c *Client) processRepo(ctx context.Context, repo *github.Repository, base string, dryRun bool) (string, error) {
+func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRun bool) (string, error) {
 	name := repo.GetName()
 	owner := repo.GetOwner().GetLogin()
 	head := repo.GetDefaultBranch()
 
-	_, _, err := c.ghClient.Repositories.GetBranch(ctx, owner, name, base)
+	_, _, err := c.ghClient.Repositories.GetBranch(ctx, owner, name, c.base)
 	if err != nil {
 		return "", fmt.Errorf("get branch: %v", err.Error())
 	}
 
 	opts := &github.PullRequestListOptions{
 		Head: head,
-		Base: base,
+		Base: c.base,
 	}
 
 	prs, _, err := c.ghClient.PullRequests.List(ctx, owner, name, opts)
@@ -182,7 +182,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, base 
 
 		pr.Title = github.String("Release")
 
-		changes, _ := c.createChangeLog(ctx, owner, name, base, head)
+		changes, _ := c.createChangeLog(ctx, owner, name, c.base, head)
 		body := prBody(prBodyTemplate, changes)
 
 		pr.Body = github.String(body)
@@ -194,7 +194,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, base 
 		return pr.GetHTMLURL(), nil
 	}
 
-	changes, err := c.createChangeLog(ctx, owner, name, base, head)
+	changes, err := c.createChangeLog(ctx, owner, name, c.base, head)
 	if err != nil {
 		return "", err
 	}
@@ -204,7 +204,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, base 
 	newPR := &github.NewPullRequest{
 		Title:               github.String("Release"),
 		Head:                &head,
-		Base:                &base,
+		Base:                &c.base,
 		Body:                github.String(body),
 		MaintainerCanModify: github.Bool(true),
 	}
@@ -218,11 +218,11 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, base 
 		return pr.GetHTMLURL(), nil
 	}
 
-	return fmt.Sprintf("https://github.com/%v/%v/compare/%v...%v", owner, name, base, head), nil
+	return fmt.Sprintf("https://github.com/%v/%v/compare/%v...%v", owner, name, c.base, head), nil
 }
 
-func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, base string, dryRun bool) ([]string, error) {
-	releases, err := c.getReleases(ctx, repos, base)
+func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, dryRun bool) ([]string, error) {
+	releases, err := c.getReleases(ctx, repos)
 	if err != nil {
 		return nil, fmt.Errorf("releases: %v\n", err.Error())
 	}
@@ -286,7 +286,7 @@ func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, b
 	return released, nil
 }
 
-func (c *Client) getReleases(ctx context.Context, repos []*github.Repository, base string) ([]*github.PullRequest, error) {
+func (c *Client) getReleases(ctx context.Context, repos []*github.Repository) ([]*github.PullRequest, error) {
 	var releases []*github.PullRequest
 
 	count := len(repos)
@@ -312,7 +312,7 @@ func (c *Client) getReleases(ctx context.Context, repos []*github.Repository, ba
 
 		opts := &github.PullRequestListOptions{
 			Head: head,
-			Base: base,
+			Base: c.base,
 		}
 
 		rs, _, err := c.ghClient.PullRequests.List(ctx, owner, name, opts)

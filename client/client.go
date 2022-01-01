@@ -12,10 +12,11 @@ import (
 )
 
 type Client struct {
+	base     string
 	ghClient *github.Client
 }
 
-func New(ghToken string) (*Client, error) {
+func New(ghToken, base string) (*Client, error) {
 	pool := trust.New()
 
 	certs, err := pool.CACerts()
@@ -39,6 +40,7 @@ func New(ghToken string) (*Client, error) {
 	)
 
 	return &Client{
+		base:     base,
 		ghClient: github.NewClient(oauth2.NewClient(ctx, ts)),
 	}, nil
 }

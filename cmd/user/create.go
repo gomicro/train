@@ -48,7 +48,7 @@ func userCreateFunc(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	urls, err := clt.ProcessRepos(ctx, repos, base, dryRun)
+	urls, err := clt.ProcessRepos(ctx, repos, dryRun)
 	if err != nil {
 		fmt.Printf("org process repos: %v\n", err.Error())
 		os.Exit(1)

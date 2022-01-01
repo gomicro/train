@@ -35,7 +35,7 @@ func userReleaseFunc(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	urls, err := clt.ReleaseRepos(ctx, repos, base, dryRun)
+	urls, err := clt.ReleaseRepos(ctx, repos, dryRun)
 	if err != nil {
 		fmt.Printf("releasing: %v\n", err.Error())
 		os.Exit(1)
