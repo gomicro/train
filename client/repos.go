@@ -10,8 +10,8 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) GetOrgRepos(ctx context.Context, orgName string) ([]*github.Repository, error) {
-	org, _, err := c.ghClient.Organizations.Get(ctx, orgName)
+func (c *Client) GetOrgRepos(ctx context.Context, name string) ([]*github.Repository, error) {
+	org, _, err := c.ghClient.Organizations.Get(ctx, name)
 	if err != nil {
 		if _, ok := err.(*github.RateLimitError); ok {
 			return nil, fmt.Errorf("github: hit rate limit")
@@ -39,7 +39,7 @@ func (c *Client) GetOrgRepos(ctx context.Context, orgName string) ([]*github.Rep
 
 	var repos []*github.Repository
 	for {
-		rs, resp, err := c.ghClient.Repositories.ListByOrg(ctx, orgName, opts)
+		rs, resp, err := c.ghClient.Repositories.ListByOrg(ctx, name, opts)
 		if err != nil {
 			if _, ok := err.(*github.RateLimitError); ok {
 				return nil, fmt.Errorf("github: hit rate limit")
@@ -64,24 +64,26 @@ func (c *Client) GetOrgRepos(ctx context.Context, orgName string) ([]*github.Rep
 	return repos, nil
 }
 
-func (c *Client) GetUserRepos(ctx context.Context, username string) ([]*github.Repository, error) {
-	u, _, err := c.ghClient.Users.Get(ctx, username)
+func (c *Client) GetUserRepos(ctx context.Context, name string) ([]*github.Repository, error) {
+	u, _, err := c.ghClient.Users.Get(ctx, name)
 	if err != nil {
+		if _, ok := err.(*github.RateLimitError); ok {
+			return nil, fmt.Errorf("github: hit rate limit")
+		}
+
 		return nil, fmt.Errorf("get user: %v", err.Error())
 	}
 
 	count := u.GetPublicRepos() + u.GetTotalPrivateRepos()
 
-	bar := uiprogress.AddBar(count).
+	repoBar := uiprogress.AddBar(count).
 		AppendCompleted().
 		PrependElapsed().
 		PrependFunc(func(b *uiprogress.Bar) string {
 			return fmt.Sprintf("Fetching (%d/%d)", b.Current(), count)
 		})
 
-	var repos []*github.Repository
-
-	opts := &github.RepositoryListByOrgOptions{
+	opts := &github.RepositoryListOptions{
 		Type: "all",
 		ListOptions: github.ListOptions{
 			Page:    0,
@@ -89,8 +91,9 @@ func (c *Client) GetUserRepos(ctx context.Context, username string) ([]*github.R
 		},
 	}
 
+	var repos []*github.Repository
 	for {
-		rs, resp, err := c.ghClient.Repositories.List(ctx, username, nil)
+		rs, resp, err := c.ghClient.Repositories.List(ctx, name, opts)
 		if err != nil {
 			if _, ok := err.(*github.RateLimitError); ok {
 				return nil, fmt.Errorf("github: hit rate limit")
@@ -100,7 +103,7 @@ func (c *Client) GetUserRepos(ctx context.Context, username string) ([]*github.R
 		}
 
 		for range rs {
-			bar.Incr()
+			repoBar.Incr()
 		}
 
 		repos = append(repos, rs...)
