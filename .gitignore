@@ -3,6 +3,7 @@ train
 
 #Directories
 /dist
+.DS_Store
 
 # Generated Files
 coverage.txt
