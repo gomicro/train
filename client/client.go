@@ -1,4 +1,4 @@
-package config
+package client
 
 import (
 	"context"
@@ -11,7 +11,11 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func (c *Config) GetClient() (*github.Client, error) {
+type Client struct {
+	ghClient *github.Client
+}
+
+func New(ghToken string) (*Client, error) {
 	pool := trust.New()
 
 	certs, err := pool.CACerts()
@@ -25,14 +29,16 @@ func (c *Config) GetClient() (*github.Client, error) {
 		},
 	}
 
-	clientCtx := context.Background()
-	clientCtx = context.WithValue(clientCtx, oauth2.HTTPClient, httpClient)
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, httpClient)
 
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{
-			AccessToken: c.Github.Token,
+			AccessToken: ghToken,
 		},
 	)
 
-	return github.NewClient(oauth2.NewClient(clientCtx, ts)), nil
+	return &Client{
+		ghClient: github.NewClient(oauth2.NewClient(ctx, ts)),
+	}, nil
 }
