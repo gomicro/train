@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gomicro/train/cmd/org"
-	"github.com/gomicro/train/cmd/user"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -27,9 +25,6 @@ func init() {
 		fmt.Printf("Error setting up: %v\n", err.Error())
 		os.Exit(1)
 	}
-
-	rootCmd.AddCommand(user.UserCmd)
-	rootCmd.AddCommand(org.OrgCmd)
 }
 
 func initEnvs() {
