@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -10,17 +11,36 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) GetOrgRepos(ctx context.Context, name string) ([]*github.Repository, error) {
-	org, _, err := c.ghClient.Organizations.Get(ctx, name)
-	if err != nil {
+func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repository, error) {
+	count := 0
+	orgFound := true
+
+	org, resp, err := c.ghClient.Organizations.Get(ctx, name)
+	if resp == nil && err != nil {
+
 		if _, ok := err.(*github.RateLimitError); ok {
 			return nil, fmt.Errorf("github: hit rate limit")
 		}
 
-		return nil, fmt.Errorf("get org: %v", err.Error())
+		return nil, fmt.Errorf("get org: %v", err)
 	}
 
-	count := org.GetPublicRepos() + org.GetTotalPrivateRepos()
+	if resp.StatusCode == http.StatusNotFound {
+		orgFound = false
+
+		user, _, err := c.ghClient.Users.Get(ctx, name)
+		if err != nil {
+			if _, ok := err.(*github.RateLimitError); ok {
+				return nil, fmt.Errorf("github: hit rate limit")
+			}
+
+			return nil, fmt.Errorf("get user: %v", err.Error())
+		}
+
+		count = user.GetPublicRepos() + user.GetTotalPrivateRepos()
+	} else {
+		count = org.GetPublicRepos() + org.GetTotalPrivateRepos()
+	}
 
 	repoBar := uiprogress.AddBar(count).
 		AppendCompleted().
@@ -29,7 +49,15 @@ func (c *Client) GetOrgRepos(ctx context.Context, name string) ([]*github.Reposi
 			return fmt.Sprintf("Fetching (%d/%d)", b.Current(), count)
 		})
 
-	opts := &github.RepositoryListByOrgOptions{
+	orgOpts := &github.RepositoryListByOrgOptions{
+		Type: "all",
+		ListOptions: github.ListOptions{
+			Page:    0,
+			PerPage: 100,
+		},
+	}
+
+	userOpts := &github.RepositoryListOptions{
 		Type: "all",
 		ListOptions: github.ListOptions{
 			Page:    0,
@@ -39,7 +67,13 @@ func (c *Client) GetOrgRepos(ctx context.Context, name string) ([]*github.Reposi
 
 	var repos []*github.Repository
 	for {
-		rs, resp, err := c.ghClient.Repositories.ListByOrg(ctx, name, opts)
+		var rs []*github.Repository
+		if orgFound {
+			rs, resp, err = c.ghClient.Repositories.ListByOrg(ctx, name, orgOpts)
+		} else {
+			rs, resp, err = c.ghClient.Repositories.List(ctx, name, userOpts)
+		}
+
 		if err != nil {
 			if _, ok := err.(*github.RateLimitError); ok {
 				return nil, fmt.Errorf("github: hit rate limit")
@@ -58,61 +92,11 @@ func (c *Client) GetOrgRepos(ctx context.Context, name string) ([]*github.Reposi
 			break
 		}
 
-		opts.Page = resp.NextPage
-	}
-
-	return repos, nil
-}
-
-func (c *Client) GetUserRepos(ctx context.Context, name string) ([]*github.Repository, error) {
-	u, _, err := c.ghClient.Users.Get(ctx, name)
-	if err != nil {
-		if _, ok := err.(*github.RateLimitError); ok {
-			return nil, fmt.Errorf("github: hit rate limit")
+		if orgFound {
+			orgOpts.Page = resp.NextPage
+		} else {
+			userOpts.Page = resp.NextPage
 		}
-
-		return nil, fmt.Errorf("get user: %v", err.Error())
-	}
-
-	count := u.GetPublicRepos() + u.GetTotalPrivateRepos()
-
-	repoBar := uiprogress.AddBar(count).
-		AppendCompleted().
-		PrependElapsed().
-		PrependFunc(func(b *uiprogress.Bar) string {
-			return fmt.Sprintf("Fetching (%d/%d)", b.Current(), count)
-		})
-
-	opts := &github.RepositoryListOptions{
-		Type: "all",
-		ListOptions: github.ListOptions{
-			Page:    0,
-			PerPage: 100,
-		},
-	}
-
-	var repos []*github.Repository
-	for {
-		rs, resp, err := c.ghClient.Repositories.List(ctx, name, opts)
-		if err != nil {
-			if _, ok := err.(*github.RateLimitError); ok {
-				return nil, fmt.Errorf("github: hit rate limit")
-			}
-
-			return nil, fmt.Errorf("list repos: %v", err.Error())
-		}
-
-		for range rs {
-			repoBar.Incr()
-		}
-
-		repos = append(repos, rs...)
-
-		if resp.NextPage == 0 {
-			break
-		}
-
-		opts.Page = resp.NextPage
 	}
 
 	return repos, nil
