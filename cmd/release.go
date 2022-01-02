@@ -1,23 +1,23 @@
-package org
+package cmd
 
 import (
 	"context"
 	"fmt"
 	"os"
 
-	"github.com/gomicro/train/repositories"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	OrgCmd.AddCommand(orgReleaseCmd)
+	rootCmd.AddCommand(orgReleaseCmd)
 }
 
 var orgReleaseCmd = &cobra.Command{
-	Use:   "release [org_name]",
-	Short: "Release PRs for an org's repos that can be merged",
-	Run:   orgReleaseFunc,
+	Use:              "release [org_name|user_name]",
+	Short:            "Release PRs for an org or user's repos that can be merged",
+	PersistentPreRun: setupClient,
+	Run:              orgReleaseFunc,
 }
 
 func orgReleaseFunc(cmd *cobra.Command, args []string) {
@@ -25,9 +25,18 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 
 	uiprogress.Start()
 
-	repos, err := getOrgRepos(ctx, args[0])
+	if dryRun {
+		fmt.Println()
+		fmt.Println("===============")
+		fmt.Println("Doing a dry run")
+		fmt.Println("===============")
+	}
+
+	fmt.Println()
+
+	repos, err := clt.GetRepos(ctx, args[0])
 	if err != nil {
-		fmt.Printf("org repos: %v\n", err.Error())
+		fmt.Printf("repos: %v\n", err.Error())
 		os.Exit(1)
 	}
 
@@ -36,13 +45,7 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	releases, err := repositories.GetReleases(ctx, client, repos, base)
-	if err != nil {
-		fmt.Printf("releases: %v\n", err.Error())
-		os.Exit(1)
-	}
-
-	urls, err := repositories.Release(ctx, client, releases, dryRun)
+	urls, err := clt.ReleaseRepos(ctx, repos, dryRun)
 	if err != nil {
 		fmt.Printf("releasing: %v\n", err.Error())
 		os.Exit(1)

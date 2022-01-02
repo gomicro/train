@@ -4,10 +4,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gomicro/train/cmd/org"
-	"github.com/gomicro/train/cmd/user"
+	"github.com/gomicro/train/client"
+	"github.com/gomicro/train/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+)
+
+var (
+	base   string
+	clt    *client.Client
+	dryRun bool
 )
 
 func init() {
@@ -27,9 +33,6 @@ func init() {
 		fmt.Printf("Error setting up: %v\n", err.Error())
 		os.Exit(1)
 	}
-
-	rootCmd.AddCommand(user.UserCmd)
-	rootCmd.AddCommand(org.OrgCmd)
 }
 
 func initEnvs() {
@@ -47,4 +50,25 @@ func Execute() {
 		fmt.Printf("Failed to execute: %v\n", err.Error())
 		os.Exit(1)
 	}
+}
+
+func setupClient(cmd *cobra.Command, args []string) {
+	c, err := config.ParseFromFile()
+	if err != nil {
+		fmt.Printf("Error: %v", err.Error())
+		os.Exit(1)
+	}
+
+	base = "release"
+	if c.ReleaseBranch != "" {
+		base = c.ReleaseBranch
+	}
+
+	clt, err = client.New(c.Github.Token, base)
+	if err != nil {
+		fmt.Printf("Error: %v", err.Error())
+		os.Exit(1)
+	}
+
+	dryRun = viper.GetBool("dryRun")
 }
