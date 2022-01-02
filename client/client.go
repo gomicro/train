@@ -5,15 +5,18 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gomicro/trust"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
+	"golang.org/x/time/rate"
 )
 
 type Client struct {
 	base     string
 	ghClient *github.Client
+	rate     *rate.Limiter
 }
 
 func New(ghToken, base string) (*Client, error) {
@@ -42,5 +45,6 @@ func New(ghToken, base string) (*Client, error) {
 	return &Client{
 		base:     base,
 		ghClient: github.NewClient(oauth2.NewClient(ctx, ts)),
+		rate:     rate.NewLimiter(rate.Every(100*time.Millisecond), 20),
 	}, nil
 }
