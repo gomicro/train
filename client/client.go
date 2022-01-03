@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gomicro/train/config"
 	"github.com/gomicro/trust"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
@@ -19,7 +20,7 @@ type Client struct {
 	rate     *rate.Limiter
 }
 
-func New(ghToken, base string) (*Client, error) {
+func New(cfg *config.Config) (*Client, error) {
 	pool := trust.New()
 
 	certs, err := pool.CACerts()
@@ -38,13 +39,18 @@ func New(ghToken, base string) (*Client, error) {
 
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{
-			AccessToken: ghToken,
+			AccessToken: cfg.Github.Token,
 		},
 	)
 
+	rl := rate.NewLimiter(
+		rate.Every(time.Second*time.Duration(cfg.Github.Limits.RequestsPerSecond)),
+		cfg.Github.Limits.Burst,
+	)
+
 	return &Client{
-		base:     base,
+		base:     cfg.ReleaseBranch,
 		ghClient: github.NewClient(oauth2.NewClient(ctx, ts)),
-		rate:     rate.NewLimiter(rate.Every(100*time.Millisecond), 20),
+		rate:     rl,
 	}, nil
 }
