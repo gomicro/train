@@ -30,12 +30,6 @@ type Config struct {
 	Github        *GithubHost `yaml:"github.com"`
 }
 
-// GithubHost represents a single host that train has a configuration for
-type GithubHost struct {
-	Token  string  `yaml:"token"`
-	Limits *Limits `yaml:"limits"`
-}
-
 // Limits represents a limits override for the client
 type Limits struct {
 	RequestsPerSecond int `yaml:"request_per_second"`
