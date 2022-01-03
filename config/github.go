@@ -9,11 +9,11 @@ type GithubHost struct {
 }
 
 type GithubEnsures struct {
-	Repos []string `yaml:"repos"`
-	Tags  []string `yaml:"tags"`
+	Repos  []string `yaml:"repos"`
+	Topics []string `yaml:"topics"`
 }
 
 type GithubIgnores struct {
-	Repos []string `yaml:"repos"`
-	Tags  []string `yaml:"tags"`
+	Repos  []string `yaml:"repos"`
+	Topics []string `yaml:"topics"`
 }

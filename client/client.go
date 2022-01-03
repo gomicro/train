@@ -19,8 +19,8 @@ type Client struct {
 	ghClient *github.Client
 	rate     *rate.Limiter
 
-	ignoreRepoMap map[string]struct{}
-	ignoreTagMap  map[string]struct{}
+	ignoreRepoMap  map[string]struct{}
+	ignoreTopicMap map[string]struct{}
 }
 
 func New(cfg *config.Config) (*Client, error) {
@@ -57,8 +57,8 @@ func New(cfg *config.Config) (*Client, error) {
 	}
 
 	itMap := map[string]struct{}{}
-	for i := range cfg.Github.Ignores.Tags {
-		itMap[strings.ToLower(cfg.Github.Ignores.Tags[i])] = struct{}{}
+	for i := range cfg.Github.Ignores.Topics {
+		itMap[strings.ToLower(cfg.Github.Ignores.Topics[i])] = struct{}{}
 	}
 
 	return &Client{
@@ -66,7 +66,7 @@ func New(cfg *config.Config) (*Client, error) {
 		ghClient: github.NewClient(oauth2.NewClient(ctx, ts)),
 		rate:     rl,
 
-		ignoreRepoMap: irMap,
-		ignoreTagMap:  itMap,
+		ignoreRepoMap:  irMap,
+		ignoreTopicMap: itMap,
 	}, nil
 }
