@@ -18,7 +18,7 @@ var defaultConfig = Config{
 	ReleaseBranch: "release",
 	Github: &GithubHost{
 		Limits: &Limits{
-			RequestsPerSecond: 1,
+			RequestsPerSecond: 10,
 			Burst:             25,
 		},
 	},
