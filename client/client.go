@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gomicro/train/config"
 	"github.com/gomicro/trust"
@@ -14,9 +15,12 @@ import (
 )
 
 type Client struct {
-	base     string
+	cfg      *config.Config
 	ghClient *github.Client
 	rate     *rate.Limiter
+
+	ignoreRepoMap map[string]struct{}
+	ignoreTagMap  map[string]struct{}
 }
 
 func New(cfg *config.Config) (*Client, error) {
@@ -47,9 +51,22 @@ func New(cfg *config.Config) (*Client, error) {
 		cfg.Github.Limits.Burst,
 	)
 
+	irMap := map[string]struct{}{}
+	for i := range cfg.Github.Ignores.Repos {
+		irMap[strings.ToLower(cfg.Github.Ignores.Repos[i])] = struct{}{}
+	}
+
+	itMap := map[string]struct{}{}
+	for i := range cfg.Github.Ignores.Tags {
+		itMap[strings.ToLower(cfg.Github.Ignores.Tags[i])] = struct{}{}
+	}
+
 	return &Client{
-		base:     cfg.ReleaseBranch,
+		cfg:      cfg,
 		ghClient: github.NewClient(oauth2.NewClient(ctx, ts)),
 		rate:     rl,
+
+		ignoreRepoMap: irMap,
+		ignoreTagMap:  itMap,
 	}, nil
 }

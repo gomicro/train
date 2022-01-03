@@ -153,14 +153,14 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 	head := repo.GetDefaultBranch()
 
 	c.rate.Wait(ctx) //nolint: errcheck
-	_, _, err := c.ghClient.Repositories.GetBranch(ctx, owner, name, c.base)
+	_, _, err := c.ghClient.Repositories.GetBranch(ctx, owner, name, c.cfg.ReleaseBranch)
 	if err != nil {
 		return "", fmt.Errorf("get branch: %v", err.Error())
 	}
 
 	opts := &github.PullRequestListOptions{
 		Head: head,
-		Base: c.base,
+		Base: c.cfg.ReleaseBranch,
 	}
 
 	c.rate.Wait(ctx) //nolint: errcheck
@@ -174,7 +174,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 
 		pr.Title = github.String("Release")
 
-		changes, _ := c.createChangeLog(ctx, owner, name, c.base, head)
+		changes, _ := c.createChangeLog(ctx, owner, name, c.cfg.ReleaseBranch, head)
 		body := prBody(prBodyTemplate, changes)
 
 		pr.Body = github.String(body)
@@ -187,7 +187,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 		return pr.GetHTMLURL(), nil
 	}
 
-	changes, err := c.createChangeLog(ctx, owner, name, c.base, head)
+	changes, err := c.createChangeLog(ctx, owner, name, c.cfg.ReleaseBranch, head)
 	if err != nil {
 		return "", err
 	}
@@ -197,7 +197,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 	newPR := &github.NewPullRequest{
 		Title:               github.String("Release"),
 		Head:                &head,
-		Base:                &c.base,
+		Base:                &c.cfg.ReleaseBranch,
 		Body:                github.String(body),
 		MaintainerCanModify: github.Bool(true),
 	}
@@ -212,7 +212,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 		return pr.GetHTMLURL(), nil
 	}
 
-	return fmt.Sprintf("https://github.com/%v/%v/compare/%v...%v", owner, name, c.base, head), nil
+	return fmt.Sprintf("https://github.com/%v/%v/compare/%v...%v", owner, name, c.cfg.ReleaseBranch, head), nil
 }
 
 func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, dryRun bool) ([]string, error) {
@@ -308,7 +308,7 @@ func (c *Client) getReleases(ctx context.Context, repos []*github.Repository) ([
 
 		opts := &github.PullRequestListOptions{
 			Head: head,
-			Base: c.base,
+			Base: c.cfg.ReleaseBranch,
 		}
 
 		c.rate.Wait(ctx) //nolint: errcheck
