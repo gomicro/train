@@ -15,6 +15,7 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 	count := 0
 	orgFound := true
 
+	c.rate.Wait(ctx) //nolint: errcheck
 	org, resp, err := c.ghClient.Organizations.Get(ctx, name)
 	if resp == nil && err != nil {
 
@@ -28,6 +29,7 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 	if resp.StatusCode == http.StatusNotFound {
 		orgFound = false
 
+		c.rate.Wait(ctx) //nolint: errcheck
 		user, _, err := c.ghClient.Users.Get(ctx, name)
 		if err != nil {
 			if _, ok := err.(*github.RateLimitError); ok {
@@ -68,6 +70,7 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 	var repos []*github.Repository
 	for {
 		var rs []*github.Repository
+		c.rate.Wait(ctx) //nolint: errcheck
 		if orgFound {
 			rs, resp, err = c.ghClient.Repositories.ListByOrg(ctx, name, orgOpts)
 		} else {
@@ -149,6 +152,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 	owner := repo.GetOwner().GetLogin()
 	head := repo.GetDefaultBranch()
 
+	c.rate.Wait(ctx) //nolint: errcheck
 	_, _, err := c.ghClient.Repositories.GetBranch(ctx, owner, name, c.base)
 	if err != nil {
 		return "", fmt.Errorf("get branch: %v", err.Error())
@@ -159,6 +163,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 		Base: c.base,
 	}
 
+	c.rate.Wait(ctx) //nolint: errcheck
 	prs, _, err := c.ghClient.PullRequests.List(ctx, owner, name, opts)
 	if err != nil {
 		return "", fmt.Errorf("list prs: %v", err.Error())
@@ -175,6 +180,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 		pr.Body = github.String(body)
 
 		if !dryRun {
+			c.rate.Wait(ctx) //nolint: errcheck
 			pr, _, _ = c.ghClient.PullRequests.Edit(ctx, owner, name, pr.GetNumber(), pr)
 		}
 
@@ -197,6 +203,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 	}
 
 	if !dryRun {
+		c.rate.Wait(ctx) //nolint: errcheck
 		pr, _, err := c.ghClient.PullRequests.Create(ctx, owner, name, newPR)
 		if err != nil {
 			return "", fmt.Errorf("create pr: %v", err.Error())
@@ -242,6 +249,7 @@ func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, d
 		appendStr = fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
 		var err error
+		c.rate.Wait(ctx) //nolint: errcheck
 		release, _, err = c.ghClient.PullRequests.Get(ctx, owner, name, release.GetNumber())
 		if err != nil {
 			return nil, fmt.Errorf("check mergeable: %v", err.Error())
@@ -253,6 +261,7 @@ func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, d
 		}
 
 		if !dryRun {
+			c.rate.Wait(ctx) //nolint: errcheck
 			res, _, err := c.ghClient.PullRequests.Merge(ctx, owner, name, release.GetNumber(), "release automerged by train", nil)
 			if err != nil {
 				return nil, fmt.Errorf("merge: %v", err.Error())
@@ -302,6 +311,7 @@ func (c *Client) getReleases(ctx context.Context, repos []*github.Repository) ([
 			Base: c.base,
 		}
 
+		c.rate.Wait(ctx) //nolint: errcheck
 		rs, _, err := c.ghClient.PullRequests.List(ctx, owner, name, opts)
 		if err != nil {
 			return nil, fmt.Errorf("pull requests: %v", err.Error())

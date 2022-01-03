@@ -59,12 +59,7 @@ func setupClient(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	base = "release"
-	if c.ReleaseBranch != "" {
-		base = c.ReleaseBranch
-	}
-
-	clt, err = client.New(c.Github.Token, base)
+	clt, err = client.New(c)
 	if err != nil {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(1)
