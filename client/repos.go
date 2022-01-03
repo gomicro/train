@@ -98,6 +98,21 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 				continue
 			}
 
+			topics := rs[i].Topics
+
+			topicSkip := false
+			for _, t := range topics {
+				_, topicMatch := c.ignoreTopicMap[strings.ToLower(t)]
+				if topicMatch {
+					topicSkip = true
+					break
+				}
+			}
+
+			if topicSkip {
+				continue
+			}
+
 			repos = append(repos, rs[i])
 		}
 
