@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gomicro/train/config"
 	"github.com/gomicro/trust"
@@ -44,7 +43,7 @@ func New(cfg *config.Config) (*Client, error) {
 	)
 
 	rl := rate.NewLimiter(
-		rate.Every(time.Second*time.Duration(cfg.Github.Limits.RequestsPerSecond)),
+		rate.Limit(cfg.Github.Limits.RequestsPerSecond),
 		cfg.Github.Limits.Burst,
 	)
 
