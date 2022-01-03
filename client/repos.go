@@ -85,11 +85,21 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 			return nil, fmt.Errorf("list repos: %v", err.Error())
 		}
 
-		for range rs {
+		for i := range rs {
 			repoBar.Incr()
-		}
 
-		repos = append(repos, rs...)
+			name := strings.ToLower(rs[i].GetName())
+			_, looseMatch := c.ignoreRepoMap[name]
+
+			fullName := fmt.Sprintf("%v/%v", strings.ToLower(rs[i].GetOwner().GetLogin()), name)
+			_, exactMatch := c.ignoreRepoMap[fullName]
+
+			if looseMatch || exactMatch {
+				continue
+			}
+
+			repos = append(repos, rs[i])
+		}
 
 		if resp.NextPage == 0 {
 			break
