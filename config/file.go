@@ -21,6 +21,7 @@ var defaultConfig = Config{
 			RequestsPerSecond: 10,
 			Burst:             25,
 		},
+		Ignores: &GithubIgnores{},
 	},
 }
 
