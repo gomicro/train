@@ -13,13 +13,17 @@ func init() {
 	rootCmd.AddCommand(configCmd)
 }
 
+var configValidArgs = []string{
+	"release_branch\tthe head branch name to use for creating the release PRs",
+}
+
 var configCmd = &cobra.Command{
-	Use:               "config [config_field] [value]",
-	Short:             "config train",
-	Long:              `configure train`,
-	Args:              cobra.ExactArgs(2),
-	Run:               configFunc,
-	ValidArgsFunction: validArgsFunc,
+	Use:       "config [config_field] [value]",
+	Short:     "config train",
+	Long:      `configure train`,
+	Args:      cobra.ExactArgs(2),
+	Run:       configFunc,
+	ValidArgs: configValidArgs,
 }
 
 func configFunc(cmd *cobra.Command, args []string) {
@@ -46,16 +50,4 @@ func configFunc(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Println("Config file updated")
-}
-
-func validArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	return argStrings(), cobra.ShellCompDirectiveNoFileComp
-}
-
-func argStrings() []string {
-	args := []string{
-		"release_branch\tthe head branch name to use for creating the release PRs",
-	}
-
-	return args
 }

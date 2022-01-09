@@ -14,11 +14,12 @@ func init() {
 }
 
 var createCmd = &cobra.Command{
-	Use:              "create [org_name|user_name]",
-	Short:            "Create release PRs for an org or user's repos",
-	Args:             cobra.ExactArgs(1),
-	PersistentPreRun: setupClient,
-	Run:              createFunc,
+	Use:               "create [org_name|user_name]",
+	Short:             "Create release PRs for an org or user's repos",
+	Args:              cobra.ExactArgs(1),
+	PersistentPreRun:  setupClient,
+	Run:               createFunc,
+	ValidArgsFunction: createCmdValidArgsFunc,
 }
 
 func createFunc(cmd *cobra.Command, args []string) {
@@ -71,4 +72,15 @@ func createFunc(cmd *cobra.Command, args []string) {
 
 		return
 	}
+}
+
+func createCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	setupClient(cmd, args)
+
+	valid, err := clt.GetLogins(context.Background())
+	if err != nil {
+		valid = []string{"error fetching"}
+	}
+
+	return valid, cobra.ShellCompDirectiveNoFileComp
 }

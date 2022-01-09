@@ -14,10 +14,11 @@ func init() {
 }
 
 var orgReleaseCmd = &cobra.Command{
-	Use:              "release [org_name|user_name]",
-	Short:            "Release PRs for an org or user's repos that can be merged",
-	PersistentPreRun: setupClient,
-	Run:              orgReleaseFunc,
+	Use:               "release [org_name|user_name]",
+	Short:             "Release PRs for an org or user's repos that can be merged",
+	PersistentPreRun:  setupClient,
+	Run:               orgReleaseFunc,
+	ValidArgsFunction: releaseCmdValidArgsFunc,
 }
 
 func orgReleaseFunc(cmd *cobra.Command, args []string) {
@@ -67,4 +68,15 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 
 		return
 	}
+}
+
+func releaseCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	setupClient(cmd, args)
+
+	valid, err := clt.GetLogins(context.Background())
+	if err != nil {
+		valid = []string{"error fetching"}
+	}
+
+	return valid, cobra.ShellCompDirectiveNoFileComp
 }
