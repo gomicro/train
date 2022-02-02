@@ -1,0 +1,32 @@
+---
+
+run:
+  tests: true
+
+linters:
+  enable:
+    - deadcode
+    - errcheck
+    - exportloopref
+    - gofmt
+    - gosimple
+    - govet
+    - ineffassign
+    - rowserrcheck
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+  disable:
+    - wsl
+    - maligned
+    - prealloc
+    - gochecknoglobals
+    - scopelint
+  disable-all: false
+  presets:
+    - bugs
+    - unused
+  fast: true
+
