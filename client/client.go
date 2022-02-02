@@ -106,3 +106,7 @@ func (c *Client) GetLogins(ctx context.Context) ([]string, error) {
 
 	return logins, nil
 }
+
+func (c *Client) GetBaseBranchName() string {
+	return c.cfg.ReleaseBranch
+}
