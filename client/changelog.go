@@ -12,12 +12,12 @@ Release PR created with ` + "`train`"
 
 func (c *Client) createChangeLog(ctx context.Context, owner, name, base, head string) (map[string][]string, error) {
 	changes := map[string][]string{
-		"added":      []string{},
-		"changed":    []string{},
-		"deprecated": []string{},
-		"removed":    []string{},
-		"fixed":      []string{},
-		"security":   []string{},
+		"added":      {},
+		"changed":    {},
+		"deprecated": {},
+		"removed":    {},
+		"fixed":      {},
+		"security":   {},
 	}
 
 	comp, _, err := c.ghClient.Repositories.CompareCommits(ctx, owner, name, base, head)

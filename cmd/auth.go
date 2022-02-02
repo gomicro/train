@@ -44,7 +44,7 @@ func authFunc(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	listener, err := net.Listen("tcp", ":0")
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(1)
