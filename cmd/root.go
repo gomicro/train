@@ -11,7 +11,6 @@ import (
 )
 
 var (
-	base   string
 	clt    *client.Client
 	dryRun bool
 )
