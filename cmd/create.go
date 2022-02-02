@@ -28,7 +28,7 @@ func createFunc(cmd *cobra.Command, args []string) {
 	uiprogress.Start()
 
 	fmt.Printf("Entity: %v\n", args[0])
-	fmt.Printf("Base: %v\n", base)
+	fmt.Printf("Base: %v\n", clt.GetBaseBranchName())
 
 	if dryRun {
 		fmt.Println()
