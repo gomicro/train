@@ -117,6 +117,10 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 				continue
 			}
 
+			if rs[i].GetArchived() {
+				continue
+			}
+
 			repos = append(repos, rs[i])
 		}
 
