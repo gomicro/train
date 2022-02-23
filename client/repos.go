@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/google/go-github/github"
@@ -169,6 +170,8 @@ func (c *Client) ProcessRepos(ctx context.Context, repos []*github.Repository, d
 
 	appendStr = ""
 
+	sort.Strings(urls)
+
 	return urls, nil
 }
 
@@ -303,6 +306,8 @@ func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, d
 	}
 
 	appendStr = ""
+
+	sort.Strings(released)
 
 	return released, nil
 }
