@@ -41,11 +41,6 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if len(repos) < 1 {
-		fmt.Println("github: no repos found")
-		return
-	}
-
 	urls, err := clt.ReleaseRepos(ctx, repos, dryRun)
 	if err != nil {
 		fmt.Printf("releasing: %v\n", err.Error())
