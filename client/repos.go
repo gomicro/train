@@ -89,6 +89,10 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 		for i := range rs {
 			repoBar.Incr()
 
+			if rs[i].GetArchived() {
+				continue
+			}
+
 			name := strings.ToLower(rs[i].GetName())
 			_, looseMatch := c.ignoreRepoMap[name]
 
