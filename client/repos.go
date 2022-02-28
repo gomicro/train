@@ -45,6 +45,10 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 		count = org.GetPublicRepos() + org.GetTotalPrivateRepos()
 	}
 
+	if count < 1 {
+		return nil, fmt.Errorf("no repos found")
+	}
+
 	repoBar := uiprogress.AddBar(count).
 		AppendCompleted().
 		PrependElapsed().

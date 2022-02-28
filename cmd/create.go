@@ -45,11 +45,6 @@ func createFunc(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if len(repos) < 1 {
-		fmt.Printf("github: no repos found\n")
-		return
-	}
-
 	urls, err := clt.ProcessRepos(ctx, repos, dryRun)
 	if err != nil {
 		fmt.Printf("process repos: %v\n", err.Error())
