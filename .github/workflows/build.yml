@@ -33,6 +33,11 @@ jobs:
       with:
         go-version: 1.20
 
+    - name: Env
+      run: go env
+    - name: Dir
+      run: ls .
+
     - name: Test
       run: go test ./...
 
