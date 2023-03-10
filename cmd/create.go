@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -18,11 +17,11 @@ var createCmd = &cobra.Command{
 	Short:             "Create release PRs for an org or user's repos",
 	Args:              cobra.ExactArgs(1),
 	PersistentPreRun:  setupClient,
-	Run:               createFunc,
+	RunE:              createFunc,
 	ValidArgsFunction: createCmdValidArgsFunc,
 }
 
-func createFunc(cmd *cobra.Command, args []string) {
+func createFunc(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	uiprogress.Start()
@@ -41,14 +40,14 @@ func createFunc(cmd *cobra.Command, args []string) {
 
 	repos, err := clt.GetRepos(ctx, args[0])
 	if err != nil {
-		fmt.Printf("repos: %v\n", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("create: %w", err)
 	}
 
 	urls, err := clt.ProcessRepos(ctx, repos, dryRun)
 	if err != nil {
-		fmt.Printf("process repos: %v\n", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("create: %w", err)
 	}
 
 	uiprogress.Stop()
@@ -64,9 +63,9 @@ func createFunc(cmd *cobra.Command, args []string) {
 		for _, url := range urls {
 			fmt.Println(url)
 		}
-
-		return
 	}
+
+	return nil
 }
 
 func createCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
