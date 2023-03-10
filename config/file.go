@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"io"
+	"os"
 	"os/user"
 	"path/filepath"
 
@@ -56,7 +56,7 @@ func (c *Config) WriteFile() error {
 		return fmt.Errorf("config: get home directory: %v", err.Error())
 	}
 
-	err = io.WriteFile(filepath.Join(usr.HomeDir, confDir, confFile), b, 0600)
+	err = os.WriteFile(filepath.Join(usr.HomeDir, confDir, confFile), b, 0600)
 	if err != nil {
 		return fmt.Errorf("config: write file: %v", err.Error())
 	}
