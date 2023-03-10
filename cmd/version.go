@@ -14,7 +14,7 @@ func init() {
 var (
 	// Version is the current version of train, made available for use through
 	// out the application.
-	Version string
+	Version string // TODO: remove global
 )
 
 func NewVersionCmd(out io.Writer, version string) *cobra.Command {
