@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/gomicro/train/config"
@@ -22,32 +21,36 @@ var configCmd = &cobra.Command{
 	Short:     "config train",
 	Long:      `configure train`,
 	Args:      cobra.ExactArgs(2),
-	Run:       configFunc,
+	RunE:      configFunc,
 	ValidArgs: configValidArgs,
 }
 
-func configFunc(cmd *cobra.Command, args []string) {
+func configFunc(cmd *cobra.Command, args []string) error {
 	field := args[0]
 	value := args[1]
 
 	confFile, err := config.ParseFromFile()
 	if err != nil {
-		fmt.Printf("error: %v", err.Error())
+		cmd.SilenceUsage = true
+		return fmt.Errorf("config: %w", err)
 	}
 
 	switch strings.ToLower(field) {
 	case "release_branch":
 		confFile.ReleaseBranch = value
 	default:
-		fmt.Printf("unreconized config field: %v\n", field)
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("config: unreconized config field: %s", field)
 	}
 
 	err = confFile.WriteFile()
 	if err != nil {
-		fmt.Printf("error: %v", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("config: %w", err)
 	}
 
+	// TODO: change to verbose output
 	fmt.Println("Config file updated")
+
+	return nil
 }

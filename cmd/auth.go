@@ -33,21 +33,21 @@ var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "auth with github",
 	Long:  `authorize train against github`,
-	Run:   authFunc,
+	RunE:  authFunc,
 }
 
 const (
 	state = "8be0d61c-eff3-4785-af45-da69eae4f226"
 )
 
-func authFunc(cmd *cobra.Command, args []string) {
+func authFunc(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("auth: %w", err)
 	}
 
 	port := listener.Addr().(*net.TCPAddr).Port
@@ -56,8 +56,8 @@ func authFunc(cmd *cobra.Command, args []string) {
 
 	certs, err := pool.CACerts()
 	if err != nil {
-		fmt.Printf("failed to create cert pool: %v\n", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("auth: %w", err)
 	}
 
 	httpClient := &http.Client{
@@ -94,8 +94,8 @@ func authFunc(cmd *cobra.Command, args []string) {
 
 	err = openBrowser(url)
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("auth: %w", err)
 	}
 
 	tkn := <-token
@@ -103,17 +103,19 @@ func authFunc(cmd *cobra.Command, args []string) {
 
 	c, err := config.ParseFromFile()
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("auth: %w", err)
 	}
 
 	c.Github.Token = tkn
 
 	err = c.WriteFile()
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("auth: %w", err)
 	}
+
+	return nil
 }
 
 func startServer(ctx context.Context, listener net.Listener, conf *oauth2.Config, token chan string) {
@@ -168,12 +170,15 @@ func authHandler(ctx context.Context, conf *oauth2.Config, token chan string) fu
 func openBrowser(url string) error {
 	switch runtime.GOOS {
 	case "linux":
-		return exec.Command("xdg-open", url).Start()
+		err := exec.Command("xdg-open", url).Start()
+		return fmt.Errorf("open browser: %w", err)
 	case "windows":
-		return exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+		err := exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+		return fmt.Errorf("open browser: %w", err)
 	case "darwin":
-		return exec.Command("open", url).Start()
+		err := exec.Command("open", url).Start()
+		return fmt.Errorf("open browser: %w", err)
 	default:
-		return fmt.Errorf("unsupported platform")
+		return fmt.Errorf("open browser: unsupported platform")
 	}
 }

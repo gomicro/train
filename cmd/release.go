@@ -3,25 +3,24 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	rootCmd.AddCommand(orgReleaseCmd)
+	rootCmd.AddCommand(releaseCmd)
 }
 
-var orgReleaseCmd = &cobra.Command{
+var releaseCmd = &cobra.Command{
 	Use:               "release [org_name|user_name]",
 	Short:             "Release PRs for an org or user's repos that can be merged",
 	PersistentPreRun:  setupClient,
-	Run:               orgReleaseFunc,
+	RunE:              releaseFunc,
 	ValidArgsFunction: releaseCmdValidArgsFunc,
 }
 
-func orgReleaseFunc(cmd *cobra.Command, args []string) {
+func releaseFunc(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	uiprogress.Start()
@@ -37,14 +36,14 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 
 	repos, err := clt.GetRepos(ctx, args[0])
 	if err != nil {
-		fmt.Printf("repos: %v\n", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("release: %w", err)
 	}
 
 	urls, err := clt.ReleaseRepos(ctx, repos, dryRun)
 	if err != nil {
-		fmt.Printf("releasing: %v\n", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("release: %w", err)
 	}
 
 	uiprogress.Stop()
@@ -60,9 +59,9 @@ func orgReleaseFunc(cmd *cobra.Command, args []string) {
 		for _, url := range urls {
 			fmt.Println(url)
 		}
-
-		return
 	}
+
+	return nil
 }
 
 func releaseCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

@@ -27,10 +27,10 @@ func init() {
 var CompletionCmd = &cobra.Command{
 	Use:   "completion",
 	Short: "Generate completion files for the train cli",
-	Run:   completionFunc,
+	RunE:  completionFunc,
 }
 
-func completionFunc(cmd *cobra.Command, args []string) {
+func completionFunc(cmd *cobra.Command, args []string) error {
 	var err error
 	switch strings.ToLower(shell) {
 	case "bash":
@@ -45,7 +45,9 @@ func completionFunc(cmd *cobra.Command, args []string) {
 	}
 
 	if err != nil {
-		fmt.Printf("error generating completion output: %v", err.Error())
-		os.Exit(1)
+		cmd.SilenceUsage = true
+		return fmt.Errorf("completion: %w", err)
 	}
+
+	return nil
 }
