@@ -3,9 +3,12 @@ module github.com/gomicro/train
 go 1.20
 
 require (
+	github.com/franela/goblin v0.0.0-20200512143142-b260c999b2d7
+	github.com/gomicro/penname v0.1.1
 	github.com/gomicro/trust v0.0.1
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/gosuri/uiprogress v0.0.1
+	github.com/onsi/gomega v1.10.1
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
 	golang.org/x/oauth2 v0.6.0
@@ -32,6 +35,7 @@ require (
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.29.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
