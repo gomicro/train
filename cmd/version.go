@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"fmt"
+	"io"
+	"os"
 
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(NewVersionCmd(os.Stdout, Version))
 }
 
 var (
@@ -16,17 +17,26 @@ var (
 	Version string
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display the version",
-	Long:  `Display the version of the CLI.`,
-	Run:   versionFunc,
+func NewVersionCmd(out io.Writer, version string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "version",
+		Short: "Display the version",
+		Long:  `Display the version of the CLI.`,
+		Run:   versionRun(version),
+	}
+
+	cmd.SetOut(out)
+
+	return cmd
 }
 
-func versionFunc(cmd *cobra.Command, args []string) {
-	if Version == "" {
-		fmt.Printf("Train version dev-local\n")
-	} else {
-		fmt.Printf("Train version %v\n", Version)
+func versionRun(version string) func(*cobra.Command, []string) {
+	return func(cmd *cobra.Command, args []string) {
+		if version == "" {
+			cmd.Println("Train version dev-local")
+			return
+		}
+
+		cmd.Printf("Train version %s\n", version)
 	}
 }
