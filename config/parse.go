@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -42,7 +42,7 @@ func ParseFromFile() (*Config, error) {
 		return &conf, nil
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(usr.HomeDir, confDir, confFile))
+	b, err := io.ReadFile(filepath.Join(usr.HomeDir, confDir, confFile))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read config file: %v", err.Error())
 	}
