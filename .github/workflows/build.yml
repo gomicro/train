@@ -1,8 +1,10 @@
 name: Build
 on: [push]
 
-jobs:
+env:
+  GOPATH: /home/runner/go
 
+jobs:
   linting:
     name: Linting
     runs-on: ubuntu-latest
