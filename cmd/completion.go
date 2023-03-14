@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -17,37 +18,44 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(CompletionCmd)
-
-	CompletionCmd.Flags().StringVar(&shell, "shell", defaultShell, "desired shell to generate completions for")
+	rootCmd.AddCommand(NewCompletionCmd(os.Stdout))
 }
 
-// CompletionCmd represents the command for generating completion files for the
-// train cli.
-var CompletionCmd = &cobra.Command{
-	Use:   "completion",
-	Short: "Generate completion files for the train cli",
-	RunE:  completionFunc,
+func NewCompletionCmd(out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "completion",
+		Short: "Generate completion files for the train cli",
+		RunE:  completionRun(out),
+	}
+
+	cmd.Flags().StringVar(&shell, "shell", defaultShell, "desired shell to generate completions for")
+
+	cmd.SetOut(out)
+
+	return cmd
 }
 
-func completionFunc(cmd *cobra.Command, args []string) error {
-	var err error
-	switch strings.ToLower(shell) {
-	case "bash":
-		err = rootCmd.GenBashCompletion(os.Stdout)
-	case "fish":
-		err = rootCmd.GenFishCompletion(os.Stdout, false)
-	case "ps", "powershell", "power_shell":
-		err = rootCmd.GenPowerShellCompletion(os.Stdout)
-	case "zsh":
-		err = rootCmd.GenZshCompletion(os.Stdout)
-	default:
-	}
+func completionRun(out io.Writer) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		var err error
 
-	if err != nil {
-		cmd.SilenceUsage = true
-		return fmt.Errorf("completion: %w", err)
-	}
+		switch strings.ToLower(shell) {
+		case "bash":
+			err = rootCmd.GenBashCompletion(out)
+		case "fish":
+			err = rootCmd.GenFishCompletion(out, false)
+		case "ps", "powershell", "power_shell":
+			err = rootCmd.GenPowerShellCompletion(out)
+		case "zsh":
+			err = rootCmd.GenZshCompletion(out)
+		default:
+		}
 
-	return nil
+		if err != nil {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("completion: %w", err)
+		}
+
+		return nil
+	}
 }
