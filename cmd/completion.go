@@ -14,7 +14,8 @@ const (
 )
 
 var (
-	shell string
+	shell          string
+	ErrUknownShell = fmt.Errorf("unrecognized shell")
 )
 
 func init() {
@@ -49,6 +50,7 @@ func completionRun(out io.Writer) func(*cobra.Command, []string) error {
 		case "zsh":
 			err = rootCmd.GenZshCompletion(out)
 		default:
+			err = ErrUknownShell
 		}
 
 		if err != nil {
