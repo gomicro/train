@@ -1,11 +1,10 @@
-package cmd_test
+package cmd
 
 import (
 	"testing"
 
 	"github.com/franela/goblin"
 	"github.com/gomicro/penname"
-	"github.com/gomicro/train/cmd"
 	. "github.com/onsi/gomega"
 )
 
@@ -16,7 +15,7 @@ func TestVersionCmd(t *testing.T) {
 	g.Describe("Version", func() {
 		g.It("should print the version set", func() {
 			w := penname.New()
-			c := cmd.NewVersionCmd(w, "test-version")
+			c := NewVersionCmd(w, "test-version")
 
 			err := c.Execute()
 			Expect(err).To(BeNil())
