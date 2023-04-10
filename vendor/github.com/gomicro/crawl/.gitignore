@@ -1,0 +1,5 @@
+#Directories
+.DS_Store
+
+# Generated Files
+coverage.txt
