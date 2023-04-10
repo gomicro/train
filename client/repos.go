@@ -2,15 +2,17 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"sort"
 	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/gosuri/uiprogress"
 )
+
+var ErrGetBranch = errors.New("get branch")
 
 func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repository, error) {
 	count := 0
@@ -24,7 +26,7 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 			return nil, fmt.Errorf("github: hit rate limit")
 		}
 
-		return nil, fmt.Errorf("get org: %v", err)
+		return nil, fmt.Errorf("get org: %w", err)
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
@@ -163,13 +165,12 @@ func (c *Client) ProcessRepos(ctx context.Context, repos []*github.Repository, d
 
 		url, err := c.processRepo(ctx, repo, dryRun)
 		if err != nil {
-			if strings.HasPrefix(err.Error(), "get branch: ") || strings.HasPrefix(err.Error(), "no commits") {
+			if errors.Is(err, ErrGetBranch) || errors.Is(err, ErrNoCommits) {
 				bar.Incr()
 				continue
 			}
 
-			fmt.Printf("process repo: %v\n", err.Error())
-			os.Exit(1)
+			return nil, fmt.Errorf("process repo: %w", err)
 		}
 
 		urls = append(urls, url)
@@ -191,7 +192,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 	c.rate.Wait(ctx) //nolint: errcheck
 	_, _, err := c.ghClient.Repositories.GetBranch(ctx, owner, name, c.cfg.ReleaseBranch)
 	if err != nil {
-		return "", fmt.Errorf("get branch: %v", err.Error())
+		return "", fmt.Errorf("%w: %w", ErrGetBranch, err)
 	}
 
 	opts := &github.PullRequestListOptions{
@@ -202,7 +203,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 	c.rate.Wait(ctx) //nolint: errcheck
 	prs, _, err := c.ghClient.PullRequests.List(ctx, owner, name, opts)
 	if err != nil {
-		return "", fmt.Errorf("list prs: %v", err.Error())
+		return "", fmt.Errorf("list prs: %w", err)
 	}
 
 	if len(prs) > 0 {
@@ -242,7 +243,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 		c.rate.Wait(ctx) //nolint: errcheck
 		pr, _, err := c.ghClient.PullRequests.Create(ctx, owner, name, newPR)
 		if err != nil {
-			return "", fmt.Errorf("create pr: %v", err.Error())
+			return "", fmt.Errorf("create pr: %w", err)
 		}
 
 		return pr.GetHTMLURL(), nil

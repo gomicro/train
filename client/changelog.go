@@ -2,13 +2,18 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 )
 
-var prBodyTemplate = `
+var (
+	ErrNoCommits = errors.New("no commits")
+
+	prBodyTemplate = `
 ----
 Release PR created with ` + "`train`"
+)
 
 func (c *Client) createChangeLog(ctx context.Context, owner, name, base, head string) (map[string][]string, error) {
 	changes := map[string][]string{
@@ -22,11 +27,11 @@ func (c *Client) createChangeLog(ctx context.Context, owner, name, base, head st
 
 	comp, _, err := c.ghClient.Repositories.CompareCommits(ctx, owner, name, base, head)
 	if err != nil {
-		return nil, fmt.Errorf("compare commits: %v", err.Error())
+		return nil, fmt.Errorf("compare commits: %w", err)
 	}
 
 	if len(comp.Commits) == 0 {
-		return nil, fmt.Errorf("no commits")
+		return nil, ErrNoCommits
 	}
 
 	for _, commit := range comp.Commits {
