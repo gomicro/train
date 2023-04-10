@@ -3,69 +3,81 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 
-	"github.com/gosuri/uiprogress"
+	"github.com/gomicro/crawl"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	rootCmd.AddCommand(createCmd)
+	rootCmd.AddCommand(NewCreateCmd(os.Stdout))
 }
 
-var createCmd = &cobra.Command{
-	Use:               "create [org_name|user_name]",
-	Short:             "Create release PRs for an org or user's repos",
-	Args:              cobra.ExactArgs(1),
-	PersistentPreRun:  setupClient,
-	RunE:              createFunc,
-	ValidArgsFunction: createCmdValidArgsFunc,
+func NewCreateCmd(out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:               "create [org_name|user_name]",
+		Short:             "Create release PRs for an org or user's repos",
+		Args:              cobra.ExactArgs(1),
+		PersistentPreRun:  setupClient,
+		RunE:              createRun(out),
+		ValidArgsFunction: createCmdValidArgsFunc,
+	}
+
+	return cmd
 }
 
-func createFunc(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+func createRun(out io.Writer) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		ctx := context.Background()
 
-	uiprogress.Start()
+		progress := crawl.New(ctx, out)
+		progress.SetOut(out)
+		progress.Start()
 
-	fmt.Printf("Entity: %v\n", args[0])
-	fmt.Printf("Base: %v\n", clt.GetBaseBranchName())
+		entity := args[0]
 
-	if dryRun {
-		fmt.Println()
-		fmt.Println("===============")
-		fmt.Println("Doing a dry run")
-		fmt.Println("===============")
-	}
+		fmt.Fprintf(out, "Entity: %s\n", entity)
+		fmt.Fprintf(out, "Base: %s\n", clt.GetBaseBranchName())
 
-	fmt.Println()
-
-	repos, err := clt.GetRepos(ctx, args[0])
-	if err != nil {
-		cmd.SilenceUsage = true
-		return fmt.Errorf("create: %w", err)
-	}
-
-	urls, err := clt.ProcessRepos(ctx, repos, dryRun)
-	if err != nil {
-		cmd.SilenceUsage = true
-		return fmt.Errorf("create: %w", err)
-	}
-
-	uiprogress.Stop()
-
-	if len(urls) > 0 {
-		fmt.Println()
 		if dryRun {
-			fmt.Println("(Dryrun) Release PRs Created:")
-		} else {
-			fmt.Println("Release PRs Created:")
+			fmt.Fprintln(out)
+			fmt.Fprintln(out, "===============")
+			fmt.Fprintln(out, "Doing a dry run")
+			fmt.Fprintln(out, "===============")
 		}
 
-		for _, url := range urls {
-			fmt.Println(url)
+		fmt.Fprintln(out)
+
+		repos, err := clt.GetRepos(ctx, progress, entity)
+		if err != nil {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("create: %w", err)
 		}
+
+		urls, err := clt.ProcessRepos(ctx, progress, repos, dryRun)
+		if err != nil {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("create: %w", err)
+		}
+
+		progress.Stop()
+
+		if len(urls) > 0 {
+			fmt.Fprintln(out)
+			if dryRun {
+				fmt.Fprintln(out, "(Dryrun) Release PRs Created:")
+			} else {
+				fmt.Fprintln(out, "Release PRs Created:")
+			}
+
+			for _, url := range urls {
+				fmt.Fprintln(out, url)
+			}
+		}
+
+		return nil
 	}
-
-	return nil
 }
 
 func createCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
