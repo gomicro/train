@@ -14,7 +14,7 @@ const (
 	confFile = "/config"
 )
 
-var defaultConfig = Config{
+var DefaultConfig = Config{
 	ReleaseBranch: "release",
 	Github: &GithubHost{
 		Limits: &Limits{

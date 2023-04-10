@@ -2,17 +2,20 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"sort"
 	"strings"
 
+	"github.com/gomicro/crawl"
+	"github.com/gomicro/crawl/bar"
 	"github.com/google/go-github/github"
-	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repository, error) {
+var ErrGetBranch = errors.New("get branch")
+
+func (c *Client) GetRepos(ctx context.Context, progress *crawl.Progress, name string) ([]*github.Repository, error) {
 	count := 0
 	orgFound := true
 
@@ -24,7 +27,7 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 			return nil, fmt.Errorf("github: hit rate limit")
 		}
 
-		return nil, fmt.Errorf("get org: %v", err)
+		return nil, fmt.Errorf("get org: %w", err)
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
@@ -49,12 +52,16 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 		return nil, fmt.Errorf("no repos found")
 	}
 
-	repoBar := uiprogress.AddBar(count).
-		AppendCompleted().
-		PrependElapsed().
-		PrependFunc(func(b *uiprogress.Bar) string {
-			return fmt.Sprintf("Fetching (%d/%d)", b.Current(), count)
-		})
+	theme := bar.NewThemeFromTheme(bar.DefaultTheme)
+	theme.Append(func(b *bar.Bar) string {
+		return fmt.Sprintf(" %0.2f", b.CompletedPercent())
+	})
+	theme.Prepend(func(b *bar.Bar) string {
+		return fmt.Sprintf("Fetching (%d/%d) %s", b.Current(), b.Total(), b.Elapsed())
+	})
+
+	repoBar := bar.New(theme, count)
+	progress.AddBar(repoBar)
 
 	orgOpts := &github.RepositoryListByOrgOptions{
 		Type: "all",
@@ -139,21 +146,25 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 	return repos, nil
 }
 
-func (c *Client) ProcessRepos(ctx context.Context, repos []*github.Repository, dryRun bool) ([]string, error) {
+func (c *Client) ProcessRepos(ctx context.Context, progress *crawl.Progress, repos []*github.Repository, dryRun bool) ([]string, error) {
 	count := len(repos)
 	name := repos[0].GetName()
 	owner := repos[0].GetOwner().GetLogin()
 	appendStr := fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
-	bar := uiprogress.AddBar(count).
-		AppendCompleted().
-		PrependElapsed().
-		PrependFunc(func(b *uiprogress.Bar) string {
-			return fmt.Sprintf("Processing (%d/%d)", b.Current(), count)
-		}).
-		AppendFunc(func(b *uiprogress.Bar) string {
-			return appendStr
-		})
+	theme := bar.NewThemeFromTheme(bar.DefaultTheme)
+	theme.Append(func(b *bar.Bar) string {
+		return fmt.Sprintf(" %0.2f", b.CompletedPercent())
+	})
+	theme.Append(func(b *bar.Bar) string {
+		return appendStr
+	})
+	theme.Prepend(func(b *bar.Bar) string {
+		return fmt.Sprintf("Processing (%d/%d) %s", b.Current(), b.Total(), b.Elapsed())
+	})
+
+	repoBar := bar.New(theme, count)
+	progress.AddBar(repoBar)
 
 	urls := []string{}
 	for _, repo := range repos {
@@ -163,17 +174,16 @@ func (c *Client) ProcessRepos(ctx context.Context, repos []*github.Repository, d
 
 		url, err := c.processRepo(ctx, repo, dryRun)
 		if err != nil {
-			if strings.HasPrefix(err.Error(), "get branch: ") || strings.HasPrefix(err.Error(), "no commits") {
-				bar.Incr()
+			if errors.Is(err, ErrGetBranch) || errors.Is(err, ErrNoCommits) {
+				repoBar.Incr()
 				continue
 			}
 
-			fmt.Printf("process repo: %v\n", err.Error())
-			os.Exit(1)
+			return nil, fmt.Errorf("process repo: %w", err)
 		}
 
 		urls = append(urls, url)
-		bar.Incr()
+		repoBar.Incr()
 	}
 
 	appendStr = ""
@@ -191,7 +201,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 	c.rate.Wait(ctx) //nolint: errcheck
 	_, _, err := c.ghClient.Repositories.GetBranch(ctx, owner, name, c.cfg.ReleaseBranch)
 	if err != nil {
-		return "", fmt.Errorf("get branch: %v", err.Error())
+		return "", fmt.Errorf("%w: %w", ErrGetBranch, err)
 	}
 
 	opts := &github.PullRequestListOptions{
@@ -202,7 +212,7 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 	c.rate.Wait(ctx) //nolint: errcheck
 	prs, _, err := c.ghClient.PullRequests.List(ctx, owner, name, opts)
 	if err != nil {
-		return "", fmt.Errorf("list prs: %v", err.Error())
+		return "", fmt.Errorf("list prs: %w", err)
 	}
 
 	if len(prs) > 0 {
@@ -242,17 +252,17 @@ func (c *Client) processRepo(ctx context.Context, repo *github.Repository, dryRu
 		c.rate.Wait(ctx) //nolint: errcheck
 		pr, _, err := c.ghClient.PullRequests.Create(ctx, owner, name, newPR)
 		if err != nil {
-			return "", fmt.Errorf("create pr: %v", err.Error())
+			return "", fmt.Errorf("create pr: %w", err)
 		}
 
 		return pr.GetHTMLURL(), nil
 	}
 
-	return fmt.Sprintf("https://github.com/%v/%v/compare/%v...%v", owner, name, c.cfg.ReleaseBranch, head), nil
+	return fmt.Sprintf("https://github.com/%s/%s/compare/%s...%s", owner, name, c.cfg.ReleaseBranch, head), nil
 }
 
-func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, dryRun bool) ([]string, error) {
-	releases, err := c.getReleases(ctx, repos)
+func (c *Client) ReleaseRepos(ctx context.Context, progress *crawl.Progress, repos []*github.Repository, dryRun bool) ([]string, error) {
+	releases, err := c.getReleases(ctx, progress, repos)
 	if err != nil {
 		return nil, fmt.Errorf("releases: %v\n", err.Error())
 	}
@@ -267,15 +277,19 @@ func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, d
 	owner := repo.GetOwner().GetLogin()
 	appendStr := fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
-	bar := uiprogress.AddBar(count).
-		AppendCompleted().
-		PrependElapsed().
-		PrependFunc(func(b *uiprogress.Bar) string {
-			return fmt.Sprintf("Processing Releases (%d/%d)", b.Current(), count)
-		}).
-		AppendFunc(func(b *uiprogress.Bar) string {
-			return appendStr
-		})
+	theme := bar.NewThemeFromTheme(bar.DefaultTheme)
+	theme.Append(func(b *bar.Bar) string {
+		return fmt.Sprintf(" %0.2f", b.CompletedPercent())
+	})
+	theme.Append(func(b *bar.Bar) string {
+		return appendStr
+	})
+	theme.Prepend(func(b *bar.Bar) string {
+		return fmt.Sprintf("Processing Releases (%d/%d) %s", b.Current(), b.Total(), b.Elapsed())
+	})
+
+	repoBar := bar.New(theme, count)
+	progress.AddBar(repoBar)
 
 	var released []string
 	for _, release := range releases {
@@ -292,7 +306,7 @@ func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, d
 		}
 
 		if strings.ToLower(release.GetMergeableState()) != "clean" {
-			bar.Incr()
+			repoBar.Incr()
 			continue
 		}
 
@@ -310,7 +324,7 @@ func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, d
 			released = append(released, release.GetHTMLURL())
 		}
 
-		bar.Incr()
+		repoBar.Incr()
 	}
 
 	appendStr = ""
@@ -320,7 +334,7 @@ func (c *Client) ReleaseRepos(ctx context.Context, repos []*github.Repository, d
 	return released, nil
 }
 
-func (c *Client) getReleases(ctx context.Context, repos []*github.Repository) ([]*github.PullRequest, error) {
+func (c *Client) getReleases(ctx context.Context, progress *crawl.Progress, repos []*github.Repository) ([]*github.PullRequest, error) {
 	var releases []*github.PullRequest
 
 	count := len(repos)
@@ -328,15 +342,19 @@ func (c *Client) getReleases(ctx context.Context, repos []*github.Repository) ([
 	owner := repos[0].GetOwner().GetLogin()
 	appendStr := fmt.Sprintf("\nCurrent Repo: %v/%v", owner, name)
 
-	bar := uiprogress.AddBar(count).
-		AppendCompleted().
-		PrependElapsed().
-		PrependFunc(func(b *uiprogress.Bar) string {
-			return fmt.Sprintf("Collecting Releases (%d/%d)", b.Current(), count)
-		}).
-		AppendFunc(func(b *uiprogress.Bar) string {
-			return appendStr
-		})
+	theme := bar.NewThemeFromTheme(bar.DefaultTheme)
+	theme.Append(func(b *bar.Bar) string {
+		return fmt.Sprintf(" %0.2f", b.CompletedPercent())
+	})
+	theme.Append(func(b *bar.Bar) string {
+		return appendStr
+	})
+	theme.Prepend(func(b *bar.Bar) string {
+		return fmt.Sprintf("Collecting Releases (%d/%d) %s", b.Current(), b.Total(), b.Elapsed())
+	})
+
+	repoBar := bar.New(theme, count)
+	progress.AddBar(repoBar)
 
 	for _, repo := range repos {
 		owner = repo.GetOwner().GetLogin()
@@ -356,7 +374,7 @@ func (c *Client) getReleases(ctx context.Context, repos []*github.Repository) ([
 		}
 
 		releases = append(releases, rs...)
-		bar.Incr()
+		repoBar.Incr()
 	}
 
 	appendStr = ""

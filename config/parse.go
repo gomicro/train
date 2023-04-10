@@ -17,7 +17,7 @@ func ParseFromFile() (*Config, error) {
 		return nil, fmt.Errorf("Failed getting home directory: %v", err.Error())
 	}
 
-	conf := defaultConfig
+	conf := DefaultConfig
 	dExists, err := DirExists()
 	if err != nil {
 		return nil, fmt.Errorf("config: parse from file: dir exists: %v", err.Error())

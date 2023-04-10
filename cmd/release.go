@@ -3,8 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
 
-	"github.com/gosuri/uiprogress"
+	"github.com/gomicro/crawl"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +24,8 @@ var releaseCmd = &cobra.Command{
 func releaseFunc(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
-	uiprogress.Start()
+	progress := crawl.New(ctx, os.Stdout)
+	progress.Start()
 
 	if dryRun {
 		fmt.Println()
@@ -34,19 +36,19 @@ func releaseFunc(cmd *cobra.Command, args []string) error {
 
 	fmt.Println()
 
-	repos, err := clt.GetRepos(ctx, args[0])
+	repos, err := clt.GetRepos(ctx, progress, args[0])
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("release: %w", err)
 	}
 
-	urls, err := clt.ReleaseRepos(ctx, repos, dryRun)
+	urls, err := clt.ReleaseRepos(ctx, progress, repos, dryRun)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("release: %w", err)
 	}
 
-	uiprogress.Stop()
+	progress.Stop()
 
 	if len(urls) > 0 {
 		fmt.Println()

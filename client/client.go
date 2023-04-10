@@ -80,7 +80,7 @@ func (c *Client) GetLogins(ctx context.Context) ([]string, error) {
 			return nil, fmt.Errorf("github: hit rate limit")
 		}
 
-		return nil, fmt.Errorf("get user: %v", err.Error())
+		return nil, fmt.Errorf("get user: %w", err)
 	}
 
 	logins = append(logins, strings.ToLower(user.GetLogin()))
@@ -96,7 +96,7 @@ func (c *Client) GetLogins(ctx context.Context) ([]string, error) {
 			return nil, fmt.Errorf("github: hit rate limit")
 		}
 
-		return nil, fmt.Errorf("list orgs: %v", err.Error())
+		return nil, fmt.Errorf("list orgs: %w", err)
 	}
 
 	for i := range orgs {

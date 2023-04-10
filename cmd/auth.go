@@ -135,14 +135,14 @@ func startServer(ctx context.Context, listener net.Listener, conf *oauth2.Config
 		<-ctx.Done()
 		err := srv.Shutdown(ctx)
 		if err != nil {
-			fmt.Printf("Error shutting down server: %v", err.Error())
+			fmt.Printf("Error shutting down server: %s", err)
 			os.Exit(1)
 		}
 	}()
 
 	err := srv.Serve(listener)
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
+		fmt.Printf("Error: %s", err)
 		os.Exit(1)
 	}
 }
@@ -159,7 +159,7 @@ func authHandler(ctx context.Context, conf *oauth2.Config, token chan string) fu
 
 		tok, err := conf.Exchange(ctx, code)
 		if err != nil {
-			fmt.Printf("errored exchanging token: %v", err.Error())
+			fmt.Printf("errored exchanging token: %s", err)
 			os.Exit(1)
 		}
 

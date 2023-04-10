@@ -1,0 +1,34 @@
+project:
+  name: crawl
+steps:
+  build:
+    help: Build the project
+    envs:
+      CGO_ENABLED: 0
+      GOOS: '{{.Os}}'
+    cmd: go build
+  clean:
+    help: Clean up all generated files
+    cmd: go clean
+  fmt:
+    help: Run gofmt
+    cmd: go fmt ./...
+  linters:
+    help: Run all the linters
+    steps:
+      - lint
+      - fmt
+      - vet
+  lint:
+    help: Run golangci-lint
+    cmd: golangci-lint run
+  test:
+    help: Run all available tests
+    steps:
+    - unit test
+  unit_test:
+    help: Run the unit tests
+    cmd: go test ./...
+  vet:
+    help: Run go vet
+    cmd: go vet ./...
