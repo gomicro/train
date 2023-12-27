@@ -33,7 +33,7 @@ jobs:
         go-version: "1.21"
 
     - name: Test
-      uses: gomicro/forge-action
+      uses: gomicro/forge-action@main
       with:
         step: test
 
