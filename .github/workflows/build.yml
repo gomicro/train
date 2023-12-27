@@ -33,7 +33,9 @@ jobs:
         go-version: "1.21"
 
     - name: Test
-      run: go test ./...
+      uses: gomicro/forge-action
+      with:
+        step: test
 
   deploy:
     name: Deploy
